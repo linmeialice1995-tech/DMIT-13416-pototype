@@ -1,0 +1,8 @@
+{
+  "name": "DEMO Gaming Portal Prototype",
+  "description": "線上娛樂城會員中心與基本資料設定網頁原型",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
