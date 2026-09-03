@@ -5,8 +5,8 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
-    // GitHub Pages serves project sites below the repository name.
-    base: process.env.GITHUB_ACTIONS ? '/DMIT-13416-pototype/' : '/',
+    // Use relative path for static hosting (GitHub Pages, etc.)
+    base: './',
     plugins: [react(), tailwindcss()],
     resolve: {
       alias: {
