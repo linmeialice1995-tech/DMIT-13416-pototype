@@ -82,6 +82,24 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
 
   // Local page-scoped reveal state for 基本資料 (starts protected/masked)
   const [isProfileRevealed, setIsProfileRevealed] = useState(false);
+  // Track if current visit to this page has been successfully verified/unlocked by password/PIN
+  const [isProfileUnlockedInSession, setIsProfileUnlockedInSession] = useState(false);
+
+  // Local page-scoped reveal state for 修改取款帳號 (銀行卡 / 數位銀行, starts protected/masked)
+  const [isWithdrawAccountRevealed, setIsWithdrawAccountRevealed] = useState(false);
+  const [isWithdrawAccountUnlockedInSession, setIsWithdrawAccountUnlockedInSession] = useState(false);
+
+  // When leaving the subview page, reset authentication and mask state
+  useEffect(() => {
+    if (currentSubView !== 'profile') {
+      setIsProfileRevealed(false);
+      setIsProfileUnlockedInSession(false);
+    }
+    if (currentSubView !== 'withdraw_account') {
+      setIsWithdrawAccountRevealed(false);
+      setIsWithdrawAccountUnlockedInSession(false);
+    }
+  }, [currentSubView]);
 
   const handleSavePassword = (e: React.FormEvent) => {
     e.preventDefault();
@@ -152,17 +170,53 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
 
   const handleToggleProfileVisibility = () => {
     if (isProfileRevealed) {
+      // 主動點 👁 重新遮蔽：直接遮蔽，保留當前頁面授權，不用再次輸入密碼
       setIsProfileRevealed(false);
-      onShowToast('已隱藏所有基本資料', 'info');
+      onShowToast('已重新遮蔽個人資料', 'info');
     } else {
-      setPinModalTarget('profile');
+      // 若當前頁面已經驗證過，直接顯示，不用再次輸入密碼
+      if (isProfileUnlockedInSession) {
+        setIsProfileRevealed(true);
+        onShowToast('已解除遮蔽顯示完整資料', 'info');
+      } else {
+        // 尚未驗證或離開頁面後重新進入，需輸入密碼
+        setPinModalTarget('profile');
+      }
+    }
+  };
+
+  const handleToggleWithdrawAccountVisibility = () => {
+    if (isWithdrawAccountRevealed) {
+      // 主動點 👁 重新遮蔽：直接遮蔽，保留當前頁面授權，不用再次輸入密碼
+      setIsWithdrawAccountRevealed(false);
+      onShowToast(bankTab === 'bank' ? '已重新遮蔽銀行卡號' : '已重新遮蔽數位銀行帳號', 'info');
+    } else {
+      // 若當前頁面已經驗證過，直接顯示，不用再次輸入密碼
+      if (isWithdrawAccountUnlockedInSession) {
+        setIsWithdrawAccountRevealed(true);
+        onShowToast(bankTab === 'bank' ? '已解除遮蔽顯示完整卡號' : '已解除遮蔽顯示完整數位銀行帳號', 'info');
+      } else {
+        // 尚未驗證或離開頁面後重新進入，需輸入密碼
+        setPinModalTarget('withdraw');
+      }
     }
   };
 
   const handleVerificationSuccess = () => {
-    setIsProfileRevealed(true);
-    setPinModalTarget(null);
-    onShowToast('基本資料驗證成功，已解鎖當前頁面所有資料', 'success');
+    if (pinModalTarget === 'profile') {
+      setIsProfileUnlockedInSession(true);
+      setIsProfileRevealed(true);
+      setPinModalTarget(null);
+      onShowToast('基本資料驗證成功，已解鎖當前頁面所有資料', 'success');
+      return;
+    }
+    if (pinModalTarget === 'withdraw') {
+      setIsWithdrawAccountUnlockedInSession(true);
+      setIsWithdrawAccountRevealed(true);
+      setPinModalTarget(null);
+      onShowToast(bankTab === 'bank' ? '銀行卡資料驗證成功，已解鎖完整卡號' : '數位銀行驗證成功，已解鎖完整帳號', 'success');
+      return;
+    }
   };
 
   const handleToggle2FA = (e: React.FormEvent) => {
@@ -287,7 +341,7 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
                   type="button"
                   onClick={handleToggleProfileVisibility}
                   className="p-1 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 active:scale-95 transition-all cursor-pointer inline-flex items-center"
-                  title={isProfileRevealed ? '點擊隱藏所有資料' : '點擊解鎖檢視完整資料'}
+                  title={isProfileRevealed ? '點擊重新遮蔽資料' : (isProfileUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整資料')}
                 >
                   {isProfileRevealed ? (
                     <Eye className="w-4.5 h-4.5 text-emerald-600" />
@@ -398,24 +452,48 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
             </h2>
           </div>
 
-          {/* Unified Single Eye Toggle for 基本資料設定 on the far right (Desktop) */}
+          {/* Unified Single Eye Toggle for 基本資料設定 & 修改取款帳號 on the far right (Desktop) */}
           {currentSubView === 'profile' ? (
             <button
               id="btn-toggle-profile-visibility"
               type="button"
               onClick={handleToggleProfileVisibility}
               className="z-10 flex items-center space-x-1.5 text-xs text-white bg-white/15 hover:bg-white/25 active:scale-95 px-2.5 py-1 rounded-md transition-all cursor-pointer shadow-2xs"
-              title={isProfileRevealed ? '點擊隱藏所有資料' : '點擊解鎖檢視完整資料'}
+              title={isProfileRevealed ? '點擊重新遮蔽資料' : (isProfileUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整資料')}
             >
               {isProfileRevealed ? (
                 <>
                   <Eye className="w-4 h-4 text-emerald-400" />
-                  <span className="font-medium text-emerald-300">隱藏</span>
+                  <span className="font-medium text-emerald-300">遮蔽</span>
                 </>
               ) : (
                 <>
                   <EyeOff className="w-4 h-4 text-gray-300" />
-                  <span className="font-medium text-gray-200">解鎖</span>
+                  <span className="font-medium text-gray-200">
+                    {isProfileUnlockedInSession ? '顯示' : '解鎖'}
+                  </span>
+                </>
+              )}
+            </button>
+          ) : currentSubView === 'withdraw_account' ? (
+            <button
+              id="btn-toggle-withdraw-account-visibility"
+              type="button"
+              onClick={handleToggleWithdrawAccountVisibility}
+              className="z-10 flex items-center space-x-1.5 text-xs text-white bg-white/15 hover:bg-white/25 active:scale-95 px-2.5 py-1 rounded-md transition-all cursor-pointer shadow-2xs"
+              title={isWithdrawAccountRevealed ? '點擊重新遮蔽帳號' : (isWithdrawAccountUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整帳號')}
+            >
+              {isWithdrawAccountRevealed ? (
+                <>
+                  <Eye className="w-4 h-4 text-emerald-400" />
+                  <span className="font-medium text-emerald-300">遮蔽</span>
+                </>
+              ) : (
+                <>
+                  <EyeOff className="w-4 h-4 text-gray-300" />
+                  <span className="font-medium text-gray-200">
+                    {isWithdrawAccountUnlockedInSession ? '顯示' : '解鎖'}
+                  </span>
                 </>
               )}
             </button>
@@ -644,16 +722,53 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      銀行卡帳號
-                    </label>
-                    <input
-                      type="text"
-                      value={bankAccountNumber}
-                      onChange={(e) => setBankAccountNumber(e.target.value)}
-                      placeholder="請輸入銀行卡號"
-                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:border-sky-500 focus:outline-hidden font-mono"
-                    />
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-xs font-medium text-gray-700">
+                        銀行卡帳號
+                      </label>
+                      <button
+                        type="button"
+                        onClick={handleToggleWithdrawAccountVisibility}
+                        className="flex items-center space-x-1 text-xs text-gray-500 hover:text-gray-800 p-0.5 rounded transition-colors cursor-pointer"
+                        title={isWithdrawAccountRevealed ? '點擊重新遮蔽銀行卡號' : (isWithdrawAccountUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整卡號')}
+                      >
+                        {isWithdrawAccountRevealed ? (
+                          <>
+                            <Eye className="w-3.5 h-3.5 text-emerald-600" />
+                            <span className="text-emerald-700 font-medium">遮蔽</span>
+                          </>
+                        ) : (
+                          <>
+                            <EyeOff className="w-3.5 h-3.5 text-gray-400" />
+                            <span>{isWithdrawAccountUnlockedInSession ? '顯示' : '解鎖'}</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={isWithdrawAccountRevealed ? bankAccountNumber : (bankAccountNumber ? '*********' + bankAccountNumber.slice(-5) : '')}
+                        onChange={(e) => {
+                          if (isWithdrawAccountRevealed) {
+                            setBankAccountNumber(e.target.value);
+                          } else {
+                            handleToggleWithdrawAccountVisibility();
+                          }
+                        }}
+                        placeholder="請輸入銀行卡號"
+                        className={`w-full pl-3 pr-10 py-2 border border-gray-300 rounded text-sm focus:border-sky-500 focus:outline-hidden font-mono ${!isWithdrawAccountRevealed ? 'bg-gray-50 cursor-pointer' : 'bg-white'}`}
+                        onClick={!isWithdrawAccountRevealed ? handleToggleWithdrawAccountVisibility : undefined}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleToggleWithdrawAccountVisibility}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 p-1 cursor-pointer"
+                        title={isWithdrawAccountRevealed ? '點擊遮蔽' : (isWithdrawAccountUnlockedInSession ? '點擊顯示' : '點擊解鎖')}
+                      >
+                        {isWithdrawAccountRevealed ? <Eye className="w-4 h-4 text-emerald-600" /> : <EyeOff className="w-4 h-4" />}
+                      </button>
+                    </div>
                   </div>
 
                   <div>
@@ -687,16 +802,53 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      錢包地址 / 提款帳號
-                    </label>
-                    <input
-                      type="text"
-                      value={cryptoAddress}
-                      onChange={(e) => setCryptoAddress(e.target.value)}
-                      placeholder="請輸入錢包地址或帳號"
-                      className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:border-sky-500 focus:outline-hidden font-mono"
-                    />
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-xs font-medium text-gray-700">
+                        錢包地址 / 數位銀行帳號
+                      </label>
+                      <button
+                        type="button"
+                        onClick={handleToggleWithdrawAccountVisibility}
+                        className="flex items-center space-x-1 text-xs text-gray-500 hover:text-gray-800 p-0.5 rounded transition-colors cursor-pointer"
+                        title={isWithdrawAccountRevealed ? '點擊重新遮蔽帳號' : (isWithdrawAccountUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整帳號')}
+                      >
+                        {isWithdrawAccountRevealed ? (
+                          <>
+                            <Eye className="w-3.5 h-3.5 text-emerald-600" />
+                            <span className="text-emerald-700 font-medium">遮蔽</span>
+                          </>
+                        ) : (
+                          <>
+                            <EyeOff className="w-3.5 h-3.5 text-gray-400" />
+                            <span>{isWithdrawAccountUnlockedInSession ? '顯示' : '解鎖'}</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={isWithdrawAccountRevealed ? cryptoAddress : (cryptoAddress ? '*****************' + cryptoAddress.slice(-5) : '')}
+                        onChange={(e) => {
+                          if (isWithdrawAccountRevealed) {
+                            setCryptoAddress(e.target.value);
+                          } else {
+                            handleToggleWithdrawAccountVisibility();
+                          }
+                        }}
+                        placeholder="請輸入數位銀行帳號或錢包地址"
+                        className={`w-full pl-3 pr-10 py-2 border border-gray-300 rounded text-sm focus:border-sky-500 focus:outline-hidden font-mono ${!isWithdrawAccountRevealed ? 'bg-gray-50 cursor-pointer' : 'bg-white'}`}
+                        onClick={!isWithdrawAccountRevealed ? handleToggleWithdrawAccountVisibility : undefined}
+                      />
+                      <button
+                        type="button"
+                        onClick={handleToggleWithdrawAccountVisibility}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 p-1 cursor-pointer"
+                        title={isWithdrawAccountRevealed ? '點擊遮蔽' : (isWithdrawAccountUnlockedInSession ? '點擊顯示' : '點擊解鎖')}
+                      >
+                        {isWithdrawAccountRevealed ? <Eye className="w-4 h-4 text-emerald-600" /> : <EyeOff className="w-4 h-4" />}
+                      </button>
+                    </div>
                   </div>
 
                   <div className="p-3 bg-amber-50 border border-amber-200 rounded text-xs text-amber-800">

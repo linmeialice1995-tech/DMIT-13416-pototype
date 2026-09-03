@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Landmark, Plus, ArrowLeftRight, Eye, EyeOff } from 'lucide-react';
 import { UserProfile } from '../../types';
 import { PasswordVerificationModal, SensitiveTargetType } from '../modals/PasswordVerificationModal';
@@ -24,8 +24,10 @@ export const WithdrawView: React.FC<WithdrawViewProps> = ({
   const [withdrawPin, setWithdrawPin] = useState<string>('');
   const [showPin, setShowPin] = useState<boolean>(false);
 
-  // Local page-scoped reveal state for 贖回 (starts protected/masked)
+  // Unified synchronized reveal state for all withdrawal accounts (銀行卡 & 數位銀行)
   const [isWithdrawRevealed, setIsWithdrawRevealed] = useState(false);
+  // Track if current visit to this page has been successfully verified/unlocked by password/PIN
+  const [isWithdrawUnlockedInSession, setIsWithdrawUnlockedInSession] = useState(false);
 
   // PIN Verification Modal state
   const [pinModalTarget, setPinModalTarget] = useState<SensitiveTargetType | null>(null);
@@ -38,19 +40,29 @@ export const WithdrawView: React.FC<WithdrawViewProps> = ({
   const numAmount = parseFloat(withdrawAmount) || 0;
   const remainingBalance = Math.max(0, user.balance - numAmount);
 
+  // Unified synchronized toggle for both 銀行卡 and 數位銀行
   const handleToggleWithdrawVisibility = () => {
     if (isWithdrawRevealed) {
+      // 主動點 👁 重新遮蔽：同步遮蔽銀行卡與數位銀行，保留當前頁面授權，不用再次輸入密碼
       setIsWithdrawRevealed(false);
-      onShowToast('已隱藏所有贖回帳號資訊', 'info');
+      onShowToast('已重新遮蔽取款帳號資訊', 'info');
     } else {
-      setPinModalTarget('withdraw');
+      // 若當前頁面已經驗證過，直接同步顯示，不用再次輸入密碼
+      if (isWithdrawUnlockedInSession) {
+        setIsWithdrawRevealed(true);
+        onShowToast('已解除遮蔽，同步顯示完整帳號資訊', 'info');
+      } else {
+        // 尚未驗證或離開頁面後重新進入，需輸入密碼
+        setPinModalTarget('withdraw');
+      }
     }
   };
 
   const handleVerificationSuccess = () => {
+    setIsWithdrawUnlockedInSession(true);
     setIsWithdrawRevealed(true);
     setPinModalTarget(null);
-    onShowToast('贖回資料驗證成功，已解鎖當前頁面所有帳號資訊', 'success');
+    onShowToast('密碼驗證成功，已同步解鎖銀行卡與數位銀行完整帳號', 'success');
   };
 
   const handleWithdrawSubmit = (e: React.FormEvent) => {
@@ -163,7 +175,7 @@ export const WithdrawView: React.FC<WithdrawViewProps> = ({
       {/* Main Dark Navy Content Form Area matching screenshot */}
       {activeTab === 'bank_card' && (
         <div className="w-full max-w-4xl bg-[#232845] rounded-lg border border-[#31375b] p-6 sm:p-8 text-white space-y-6">
-          {/* Top Pill Badge & Unified Single Eye Toggle */}
+          {/* Top Pill Badge & Single Unified Eye Toggle above AAA */}
           <div className="flex items-center justify-between">
             <span className="inline-block bg-[#3c446a] text-white text-xs font-semibold px-4 py-1.5 rounded-xs tracking-wider">
               銀行資料
@@ -173,17 +185,19 @@ export const WithdrawView: React.FC<WithdrawViewProps> = ({
               type="button"
               onClick={handleToggleWithdrawVisibility}
               className="flex items-center space-x-1.5 text-xs text-white bg-white/10 hover:bg-white/20 active:scale-95 px-3 py-1.5 rounded-md transition-all cursor-pointer border border-white/10 shadow-xs"
-              title={isWithdrawRevealed ? '點擊隱藏所有帳號' : '點擊解鎖檢視完整帳號'}
+              title={isWithdrawRevealed ? '點擊重新遮蔽取款帳號' : (isWithdrawUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整卡號')}
             >
               {isWithdrawRevealed ? (
                 <>
                   <Eye className="w-4 h-4 text-emerald-400" />
-                  <span className="font-medium text-emerald-300">隱藏</span>
+                  <span className="font-medium text-emerald-300">遮蔽</span>
                 </>
               ) : (
                 <>
                   <EyeOff className="w-4 h-4 text-gray-300" />
-                  <span className="font-medium text-gray-200">解鎖</span>
+                  <span className="font-medium text-gray-200">
+                    {isWithdrawUnlockedInSession ? '顯示' : '解鎖'}
+                  </span>
                 </>
               )}
             </button>
@@ -203,13 +217,13 @@ export const WithdrawView: React.FC<WithdrawViewProps> = ({
               <span className="text-gray-300 font-medium w-32">省份</span>
               <span className="text-white font-semibold text-right flex-1">-</span>
             </div>
-            <div className="flex items-center justify-between py-0.5">
+            <div className="flex items-center justify-between py-1 border-t border-[#31375b]/60">
               <span className="text-gray-300 font-medium w-32">銀行帳號</span>
-              <div className="flex items-center space-x-2.5 text-right">
+              <div className="flex items-center text-right">
                 <span 
-                  className={`text-white font-mono font-bold text-sm tracking-wider ${!isWithdrawRevealed ? 'cursor-pointer hover:text-sky-300 transition-colors' : ''}`}
+                  className={`text-white font-mono font-bold text-sm sm:text-base tracking-wider ${!isWithdrawRevealed ? 'cursor-pointer hover:text-sky-300 transition-colors' : ''}`}
                   onClick={!isWithdrawRevealed ? handleToggleWithdrawVisibility : undefined}
-                  title={!isWithdrawRevealed ? '點擊解鎖檢視完整帳號' : undefined}
+                  title={!isWithdrawRevealed ? (isWithdrawUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整卡號') : undefined}
                 >
                   {isWithdrawRevealed
                     ? user.fullBankAccount || '01398829142432'
@@ -374,27 +388,29 @@ export const WithdrawView: React.FC<WithdrawViewProps> = ({
       {/* Online Banking Tab - Matching screenshot */}
       {activeTab === 'online_bank' && (
         <div className="w-full max-w-4xl bg-[#232845] rounded-lg border border-[#31375b] p-6 sm:p-8 text-white space-y-6 animate-in fade-in duration-150">
-          {/* Top Pill Badge & Unified Single Eye Toggle */}
+          {/* Top Pill Badge & Single Unified Eye Toggle */}
           <div className="flex items-center justify-between">
             <span className="inline-block bg-[#3c446a] text-white text-xs font-semibold px-4 py-1.5 rounded-xs tracking-wider">
-              銀行資料
+              數位銀行資料
             </span>
             <button
               id="btn-toggle-online-withdraw-visibility"
               type="button"
               onClick={handleToggleWithdrawVisibility}
               className="flex items-center space-x-1.5 text-xs text-white bg-white/10 hover:bg-white/20 active:scale-95 px-3 py-1.5 rounded-md transition-all cursor-pointer border border-white/10 shadow-xs"
-              title={isWithdrawRevealed ? '點擊隱藏所有帳號' : '點擊解鎖檢視完整帳號'}
+              title={isWithdrawRevealed ? '點擊重新遮蔽取款帳號' : (isWithdrawUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整帳號')}
             >
               {isWithdrawRevealed ? (
                 <>
                   <Eye className="w-4 h-4 text-emerald-400" />
-                  <span className="font-medium text-emerald-300">隱藏</span>
+                  <span className="font-medium text-emerald-300">遮蔽</span>
                 </>
               ) : (
                 <>
                   <EyeOff className="w-4 h-4 text-gray-300" />
-                  <span className="font-medium text-gray-200">解鎖</span>
+                  <span className="font-medium text-gray-200">
+                    {isWithdrawUnlockedInSession ? '顯示' : '解鎖'}
+                  </span>
                 </>
               )}
             </button>
@@ -406,13 +422,13 @@ export const WithdrawView: React.FC<WithdrawViewProps> = ({
               <span className="text-gray-300 font-medium w-32">銀行名稱</span>
               <span className="text-white font-semibold text-right flex-1">PIX-CPF</span>
             </div>
-            <div className="flex items-center justify-between py-0.5">
-              <span className="text-gray-300 font-medium w-32">數字</span>
-              <div className="flex items-center space-x-2.5 text-right">
+            <div className="flex items-center justify-between py-1 border-t border-[#31375b]/60">
+              <span className="text-gray-300 font-medium w-32">數字帳號</span>
+              <div className="flex items-center text-right">
                 <span 
-                  className={`text-white font-mono font-bold text-sm tracking-wider ${!isWithdrawRevealed ? 'cursor-pointer hover:text-sky-300 transition-colors' : ''}`}
+                  className={`text-white font-mono font-bold text-sm sm:text-base tracking-wider ${!isWithdrawRevealed ? 'cursor-pointer hover:text-sky-300 transition-colors' : ''}`}
                   onClick={!isWithdrawRevealed ? handleToggleWithdrawVisibility : undefined}
-                  title={!isWithdrawRevealed ? '點擊解鎖檢視完整帳號' : undefined}
+                  title={!isWithdrawRevealed ? (isWithdrawUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整帳號') : undefined}
                 >
                   {isWithdrawRevealed
                     ? user.fullOnlineBankAccount || 'PIX-082914243249021'
@@ -441,23 +457,25 @@ export const WithdrawView: React.FC<WithdrawViewProps> = ({
                 取款方式
               </label>
               <div className="text-xs sm:text-sm text-gray-200">
-                <label className="flex items-center space-x-2.5 cursor-pointer select-none">
-                  <input
-                    type="radio"
-                    name="withdrawOnlineMethod"
-                    defaultChecked
-                    className="w-4 h-4 text-sky-500 bg-transparent border-gray-400 focus:ring-0 cursor-pointer"
-                  />
-                  <span 
-                    className={`font-semibold text-white ${!isWithdrawRevealed ? 'cursor-pointer hover:text-sky-300 transition-colors' : ''}`}
-                    onClick={!isWithdrawRevealed ? handleToggleWithdrawVisibility : undefined}
-                    title={!isWithdrawRevealed ? '點擊解鎖檢視完整帳號' : undefined}
-                  >
-                    PIX-CPF ({isWithdrawRevealed 
-                      ? (user.fullOnlineBankAccount || 'PIX-082914243249021') 
-                      : (user.onlineBankAccount || '*****************24324')})
-                  </span>
-                </label>
+                <div className="flex items-center space-x-2.5">
+                  <label className="flex items-center space-x-2.5 cursor-pointer select-none">
+                    <input
+                      type="radio"
+                      name="withdrawOnlineMethod"
+                      defaultChecked
+                      className="w-4 h-4 text-sky-500 bg-transparent border-gray-400 focus:ring-0 cursor-pointer"
+                    />
+                    <span 
+                      className={`font-semibold text-white ${!isWithdrawRevealed ? 'cursor-pointer hover:text-sky-300 transition-colors' : ''}`}
+                      onClick={!isWithdrawRevealed ? handleToggleWithdrawVisibility : undefined}
+                      title={!isWithdrawRevealed ? (isWithdrawUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整帳號') : undefined}
+                    >
+                      PIX-CPF ({isWithdrawRevealed 
+                        ? (user.fullOnlineBankAccount || 'PIX-082914243249021') 
+                        : (user.onlineBankAccount || '*****************24324')})
+                    </span>
+                  </label>
+                </div>
               </div>
             </div>
 
