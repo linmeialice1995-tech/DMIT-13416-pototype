@@ -54,11 +54,16 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showOldPassword, setShowOldPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Pin Form State
   const [currentPin, setCurrentPin] = useState(user.withdrawPassword || '123456');
   const [newPin, setNewPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
+  const [showNewPin, setShowNewPin] = useState(false);
+  const [showConfirmPin, setShowConfirmPin] = useState(false);
 
   // Withdraw Account Form State
   const [bankTab, setBankTab] = useState<'bank' | 'crypto'>('bank');
@@ -575,37 +580,67 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
                 <label className="block text-xs font-medium text-gray-700 mb-1">
                   目前密碼
                 </label>
-                <input
-                  type="password"
-                  value={oldPassword}
-                  onChange={(e) => setOldPassword(e.target.value)}
-                  placeholder="請輸入目前密碼"
-                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:border-sky-500 focus:outline-hidden"
-                />
+                <div className="relative">
+                  <input
+                    type={showOldPassword ? 'text' : 'password'}
+                    value={oldPassword}
+                    onChange={(e) => setOldPassword(e.target.value)}
+                    placeholder="請輸入目前密碼"
+                    className="w-full pl-3 pr-10 py-2 border border-gray-300 rounded text-sm focus:border-sky-500 focus:outline-hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowOldPassword(!showOldPassword)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 p-1 cursor-pointer"
+                    title={showOldPassword ? '隱藏密碼' : '顯示密碼'}
+                  >
+                    {showOldPassword ? <Eye className="w-4 h-4 text-sky-600" /> : <EyeOff className="w-4 h-4 text-gray-400" />}
+                  </button>
+                </div>
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">
                   新密碼
                 </label>
-                <input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="6-20 位英文或數字"
-                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:border-sky-500 focus:outline-hidden"
-                />
+                <div className="relative">
+                  <input
+                    type={showNewPassword ? 'text' : 'password'}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="6-20 位英文或數字"
+                    className="w-full pl-3 pr-10 py-2 border border-gray-300 rounded text-sm focus:border-sky-500 focus:outline-hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 p-1 cursor-pointer"
+                    title={showNewPassword ? '隱藏密碼' : '顯示密碼'}
+                  >
+                    {showNewPassword ? <Eye className="w-4 h-4 text-sky-600" /> : <EyeOff className="w-4 h-4 text-gray-400" />}
+                  </button>
+                </div>
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">
                   確認新密碼
                 </label>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="請再次輸入新密碼"
-                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:border-sky-500 focus:outline-hidden"
-                />
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="請再次輸入新密碼"
+                    className="w-full pl-3 pr-10 py-2 border border-gray-300 rounded text-sm focus:border-sky-500 focus:outline-hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 p-1 cursor-pointer"
+                    title={showConfirmPassword ? '隱藏密碼' : '顯示密碼'}
+                  >
+                    {showConfirmPassword ? <Eye className="w-4 h-4 text-sky-600" /> : <EyeOff className="w-4 h-4 text-gray-400" />}
+                  </button>
+                </div>
               </div>
               <button
                 type="submit"
@@ -625,27 +660,47 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
                 <label className="block text-xs font-medium text-gray-700 mb-1">
                   設定取款密碼
                 </label>
-                <input
-                  type="password"
-                  maxLength={6}
-                  value={newPin}
-                  onChange={(e) => setNewPin(e.target.value)}
-                  placeholder="請輸入 6 位純數字"
-                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:border-sky-500 focus:outline-hidden tracking-widest text-center font-bold"
-                />
+                <div className="relative">
+                  <input
+                    type={showNewPin ? 'text' : 'password'}
+                    maxLength={6}
+                    value={newPin}
+                    onChange={(e) => setNewPin(e.target.value)}
+                    placeholder="請輸入 6 位純數字"
+                    className="w-full pl-3 pr-10 py-2 border border-gray-300 rounded text-sm focus:border-sky-500 focus:outline-hidden tracking-widest text-center font-bold"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPin(!showNewPin)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 p-1 cursor-pointer"
+                    title={showNewPin ? '隱藏密碼' : '顯示密碼'}
+                  >
+                    {showNewPin ? <Eye className="w-4 h-4 text-sky-600" /> : <EyeOff className="w-4 h-4 text-gray-400" />}
+                  </button>
+                </div>
               </div>
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">
                   確認提款密碼
                 </label>
-                <input
-                  type="password"
-                  maxLength={6}
-                  value={confirmPin}
-                  onChange={(e) => setConfirmPin(e.target.value)}
-                  placeholder="請再次輸入 6 位純數字"
-                  className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:border-sky-500 focus:outline-hidden tracking-widest text-center font-bold"
-                />
+                <div className="relative">
+                  <input
+                    type={showConfirmPin ? 'text' : 'password'}
+                    maxLength={6}
+                    value={confirmPin}
+                    onChange={(e) => setConfirmPin(e.target.value)}
+                    placeholder="請再次輸入 6 位純數字"
+                    className="w-full pl-3 pr-10 py-2 border border-gray-300 rounded text-sm focus:border-sky-500 focus:outline-hidden tracking-widest text-center font-bold"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPin(!showConfirmPin)}
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 p-1 cursor-pointer"
+                    title={showConfirmPin ? '隱藏密碼' : '顯示密碼'}
+                  >
+                    {showConfirmPin ? <Eye className="w-4 h-4 text-sky-600" /> : <EyeOff className="w-4 h-4 text-gray-400" />}
+                  </button>
+                </div>
               </div>
               <button
                 type="submit"

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Lock, Landmark, AlertCircle, ArrowRight } from 'lucide-react';
+import { X, Lock, Landmark, AlertCircle, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { UserProfile } from '../../types';
 
 interface WithdrawModalProps {
@@ -19,6 +19,7 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({
 }) => {
   const [amount, setAmount] = useState<string>('');
   const [pin, setPin] = useState<string>('');
+  const [showPin, setShowPin] = useState<boolean>(false);
   const [selectedBank, setSelectedBank] = useState(`${user.bankName || 'ABBANK'} (${user.fullBankAccount || user.bankAccount || '01398829142432'})`);
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -145,13 +146,21 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({
                 <Lock className="w-4 h-4" />
               </span>
               <input
-                type="password"
+                type={showPin ? 'text' : 'password'}
                 maxLength={6}
                 value={pin}
                 onChange={(e) => setPin(e.target.value)}
                 placeholder="請輸入取款密碼"
-                className="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-xl text-sm font-semibold focus:border-sky-500 focus:outline-hidden tracking-widest"
+                className="w-full pl-9 pr-10 py-2.5 border border-gray-300 rounded-xl text-sm font-semibold focus:border-sky-500 focus:outline-hidden tracking-widest"
               />
+              <button
+                type="button"
+                onClick={() => setShowPin(!showPin)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                title={showPin ? '隱藏密碼' : '顯示密碼'}
+              >
+                {showPin ? <Eye className="w-4 h-4 text-sky-600" /> : <EyeOff className="w-4 h-4 text-gray-400" />}
+              </button>
             </div>
           </div>
 
