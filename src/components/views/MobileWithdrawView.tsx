@@ -282,45 +282,66 @@ export const MobileWithdrawView: React.FC<MobileWithdrawViewProps> = ({
 
       {/* 4. Main Body Container */}
       <div className="flex-1 px-4 py-4 space-y-4 max-w-md mx-auto w-full">
-        {/* Sub-tabs: 银行卡 | 数位银行 | 添加银行 */}
-        <div className="grid grid-cols-3 gap-2">
-          <button
-            id="btn-subtab-bank-card"
-            onClick={() => setActiveSubTab('bank_card')}
-            className={`py-2 px-1 rounded-md flex items-center justify-center space-x-1.5 text-xs font-bold cursor-pointer transition-all ${
-              activeSubTab === 'bank_card'
-                ? 'bg-[#c00000] text-white shadow-md border border-red-500'
-                : 'bg-[#290000] text-gray-300 border border-[#520000] hover:bg-[#3d0000]'
-            }`}
-          >
-            <Landmark className="w-4 h-4 stroke-[2.2]" />
-            <span>银行卡</span>
-          </button>
+        {/* Sub-tabs: 银行卡 | 網上銀行 | 添加银行 + 统一眼睛开关 */}
+        <div className="flex items-center space-x-2">
+          <div className="grid grid-cols-3 gap-1.5 flex-1">
+            <button
+              id="btn-subtab-bank-card"
+              onClick={() => setActiveSubTab('bank_card')}
+              className={`py-2 px-1 rounded-md flex items-center justify-center space-x-1 text-xs font-bold cursor-pointer transition-all ${
+                activeSubTab === 'bank_card'
+                  ? 'bg-[#c00000] text-white shadow-md border border-red-500'
+                  : 'bg-[#290000] text-gray-300 border border-[#520000] hover:bg-[#3d0000]'
+              }`}
+            >
+              <Landmark className="w-3.5 h-3.5 stroke-[2.2]" />
+              <span>银行卡</span>
+            </button>
 
-          <button
-            id="btn-subtab-online-bank"
-            onClick={() => setActiveSubTab('online_bank')}
-            className={`py-2 px-1 rounded-md flex items-center justify-center space-x-1.5 text-xs font-bold cursor-pointer transition-all ${
-              activeSubTab === 'online_bank'
-                ? 'bg-[#c00000] text-white shadow-md border border-red-500'
-                : 'bg-[#290000] text-gray-300 border border-[#520000] hover:bg-[#3d0000]'
-            }`}
-          >
-            <CreditCard className="w-4 h-4 stroke-[2.2]" />
-            <span>数位银行</span>
-          </button>
+            <button
+              id="btn-subtab-online-bank"
+              onClick={() => setActiveSubTab('online_bank')}
+              className={`py-2 px-1 rounded-md flex items-center justify-center space-x-1 text-xs font-bold cursor-pointer transition-all ${
+                activeSubTab === 'online_bank'
+                  ? 'bg-[#c00000] text-white shadow-md border border-red-500'
+                  : 'bg-[#290000] text-gray-300 border border-[#520000] hover:bg-[#3d0000]'
+              }`}
+            >
+              <CreditCard className="w-3.5 h-3.5 stroke-[2.2]" />
+              <span>網上銀行</span>
+            </button>
 
+            <button
+              id="btn-subtab-add-bank"
+              onClick={() => setActiveSubTab('add_bank')}
+              className={`py-2 px-1 rounded-md flex items-center justify-center space-x-1 text-xs font-bold cursor-pointer transition-all ${
+                activeSubTab === 'add_bank'
+                  ? 'bg-[#c00000] text-white shadow-md border border-red-500'
+                  : 'bg-[#290000] text-gray-300 border border-[#520000] hover:bg-[#3d0000]'
+              }`}
+            >
+              <PlusCircle className="w-3.5 h-3.5 stroke-[2.2]" />
+              <span>添加银行</span>
+            </button>
+          </div>
+
+          {/* 统一眼睛开关 (灰底) */}
           <button
-            id="btn-subtab-add-bank"
-            onClick={() => setActiveSubTab('add_bank')}
-            className={`py-2 px-1 rounded-md flex items-center justify-center space-x-1.5 text-xs font-bold cursor-pointer transition-all ${
-              activeSubTab === 'add_bank'
-                ? 'bg-[#c00000] text-white shadow-md border border-red-500'
-                : 'bg-[#290000] text-gray-300 border border-[#520000] hover:bg-[#3d0000]'
+            id="btn-mobile-toggle-withdraw-visibility"
+            type="button"
+            onClick={handleToggleWithdrawVisibility}
+            className={`p-2 self-stretch rounded-md transition-all cursor-pointer border flex items-center justify-center shrink-0 active:scale-95 ${
+              isWithdrawRevealed
+                ? 'bg-zinc-700 border-emerald-500 text-emerald-400'
+                : 'bg-zinc-700 hover:bg-zinc-600 border-zinc-600 text-gray-300'
             }`}
+            title={isWithdrawRevealed ? '點擊重新遮蔽取款帳號' : (isWithdrawUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整帳號')}
           >
-            <PlusCircle className="w-4 h-4 stroke-[2.2]" />
-            <span>添加银行</span>
+            {isWithdrawRevealed ? (
+              <Eye className="w-4 h-4 text-emerald-400" />
+            ) : (
+              <EyeOff className="w-4 h-4 text-gray-300" />
+            )}
           </button>
         </div>
 
@@ -387,31 +408,10 @@ export const MobileWithdrawView: React.FC<MobileWithdrawViewProps> = ({
           <div className="space-y-4">
             {/* Section: 银行资料 */}
             <div>
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center mb-2">
                 <span className="text-sm font-bold text-white tracking-wide">
                   银行资料
                 </span>
-                <button
-                  id="btn-mobile-toggle-withdraw-visibility"
-                  type="button"
-                  onClick={handleToggleWithdrawVisibility}
-                  className="flex items-center space-x-1 text-xs text-white bg-white/10 hover:bg-white/20 active:scale-95 px-2.5 py-1 rounded-md transition-all cursor-pointer border border-white/10 shadow-xs"
-                  title={isWithdrawRevealed ? '點擊重新遮蔽取款帳號' : (isWithdrawUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整帳號')}
-                >
-                  {isWithdrawRevealed ? (
-                    <>
-                      <Eye className="w-3.5 h-3.5 text-emerald-400" />
-                      <span className="font-medium text-emerald-300">遮蔽</span>
-                    </>
-                  ) : (
-                    <>
-                      <EyeOff className="w-3.5 h-3.5 text-gray-300" />
-                      <span className="font-medium text-gray-200">
-                        {isWithdrawUnlockedInSession ? '顯示' : '解鎖'}
-                      </span>
-                    </>
-                  )}
-                </button>
               </div>
 
               {activeSubTab === 'online_bank' ? (
@@ -521,6 +521,12 @@ export const MobileWithdrawView: React.FC<MobileWithdrawViewProps> = ({
                 <div className="flex items-center justify-between">
                   <span className="text-gray-300 font-medium">省份</span>
                   <span className="text-gray-400 font-medium">-</span>
+                </div>
+
+                {/* 縣市 */}
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300 font-medium">縣市</span>
+                  <span className="text-white font-bold">147</span>
                 </div>
 
                 {/* 银行帐号 */}

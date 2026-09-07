@@ -87,17 +87,17 @@ export const UserSidebar: React.FC<UserSidebarProps> = ({
           </p>
         </div>
 
-        {/* Balance with Refresh */}
-        <div className="mt-2 flex items-center space-x-1.5 bg-[#1a1e35] px-3 py-1 rounded-full border border-[#32375e]">
-          <span className="text-xs text-gray-300">餘額：</span>
-          <span className="text-amber-400 font-bold text-sm tracking-wide">
-            {user.currency}{user.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        {/* Balance with Refresh - matching screenshot: 餘額 : 1,042.28 🔄 */}
+        <div className="mt-2.5 flex items-center justify-center space-x-1.5 text-xs sm:text-sm">
+          <span className="text-gray-200 font-bold">餘額 :</span>
+          <span className="text-white font-bold text-base tracking-wide">
+            {user.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </span>
           <button
             id="btn-sidebar-refresh"
             onClick={onRefreshBalance}
             title="刷新餘額"
-            className="text-amber-400/90 hover:text-amber-300 p-0.5 cursor-pointer ml-0.5 transition-transform"
+            className="text-amber-400 hover:text-amber-300 p-0.5 cursor-pointer transition-transform"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
           </button>
@@ -112,15 +112,15 @@ export const UserSidebar: React.FC<UserSidebarProps> = ({
             onSelectMenu('deposit');
             onOpenDeposit();
           }}
-          className={`flex flex-col items-center justify-center py-3.5 px-2 border-r border-[#31365b] transition-all cursor-pointer group ${
+          className={`flex flex-col items-center justify-center py-4 px-2 border-r border-[#31365b] transition-all cursor-pointer group ${
             activeMenu === 'deposit'
-              ? 'bg-[#f5a623] text-white shadow-sm ring-1 ring-black/30'
-              : 'bg-[#282e4e] hover:bg-[#31385d] text-white'
+              ? 'bg-[#f5a623] text-white ring-2 ring-[#f5a623]'
+              : 'bg-[#232845] hover:bg-[#2a3052] text-white'
           }`}
         >
           <CircleDollarSign
-            className={`w-5 h-5 mb-1 group-hover:scale-110 transition-transform ${
-              activeMenu === 'deposit' ? 'text-white' : 'text-sky-400'
+            className={`w-6 h-6 mb-1 group-hover:scale-105 transition-transform ${
+              activeMenu === 'deposit' ? 'text-white' : 'text-white'
             }`}
           />
           <span className="text-xs font-bold tracking-wider text-white">存入</span>
@@ -132,15 +132,15 @@ export const UserSidebar: React.FC<UserSidebarProps> = ({
             onSelectMenu('withdraw');
             onOpenWithdraw();
           }}
-          className={`flex flex-col items-center justify-center py-3.5 px-2 transition-all cursor-pointer group ${
+          className={`flex flex-col items-center justify-center py-4 px-2 transition-all cursor-pointer group ${
             activeMenu === 'withdraw'
-              ? 'bg-[#f5a623] text-white shadow-sm ring-1 ring-black/30'
-              : 'bg-[#282e4e] hover:bg-[#31385d] text-white'
+              ? 'bg-[#f5a623] text-white ring-2 ring-[#f5a623]'
+              : 'bg-[#232845] hover:bg-[#2a3052] text-white'
           }`}
         >
           <HandCoins
-            className={`w-5 h-5 mb-1 group-hover:scale-110 transition-transform ${
-              activeMenu === 'withdraw' ? 'text-white' : 'text-amber-400'
+            className={`w-6 h-6 mb-1 group-hover:scale-105 transition-transform ${
+              activeMenu === 'withdraw' ? 'text-white' : 'text-white'
             }`}
           />
           <span className="text-xs font-bold tracking-wider text-white">贖回</span>

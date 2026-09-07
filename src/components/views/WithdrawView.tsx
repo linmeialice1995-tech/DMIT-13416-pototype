@@ -104,49 +104,49 @@ export const WithdrawView: React.FC<WithdrawViewProps> = ({
   };
 
   return (
-    <div className="flex-1 bg-[#1d2139] p-6 sm:p-8 min-h-[460px] flex flex-col justify-start space-y-6">
-      {/* 3 Top Category Cards matching screenshot exactly */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-4xl">
+    <div className="flex-1 bg-white p-6 sm:p-8 min-h-[520px] flex flex-col justify-start space-y-6">
+      {/* Top Category Buttons + Unified Eye Switch directly to the right of 添加銀行 */}
+      <div className="flex items-center gap-2.5 sm:gap-4 max-w-4xl">
         {/* 1. 銀行卡 (Bank Card) - Selected in screenshot */}
         <button
           id="btn-withdraw-bankcard"
           onClick={() => setActiveTab('bank_card')}
-          className={`flex items-center justify-center space-x-2.5 px-6 py-3.5 rounded-lg transition-all duration-200 cursor-pointer text-center border ${
+          className={`flex-1 flex items-center justify-center space-x-2 px-3 sm:px-6 py-3.5 rounded-lg transition-all duration-200 cursor-pointer text-center ${
             activeTab === 'bank_card'
-              ? 'bg-[#242845] border-[#f5a623] ring-1 ring-[#f5a623] shadow-md'
-              : 'bg-[#242845] hover:bg-[#2c3254] border-[#31375b]'
+              ? 'bg-[#232845] border-2 border-[#f5a623] shadow-md'
+              : 'bg-[#232845] hover:bg-[#2c3254] border-2 border-transparent'
           }`}
         >
-          {/* Yellow Bank Icon with Dollar */}
+          {/* Golden Temple/Bank Icon with ⇄ */}
           <div className="flex items-center text-[#f5a623]">
-            <svg className="w-7 h-7 fill-[#f5a623]" viewBox="0 0 24 24">
-              <path d="M12 1L2 6v2h20V6L12 1zm-7 9v8h2v-8H5zm5 0v8h2v-8h-2zm5 0v8h2v-8h-2zm5 0v8h2v-8h-2zM2 20v2h20v-2H2z" />
-            </svg>
-            <span className="text-xs font-black -ml-1 text-[#f5a623]">$</span>
-          </div>
-          <span className="text-white font-bold text-sm sm:text-base tracking-wide">
-            銀行卡
-          </span>
-        </button>
-
-        {/* 2. 數位銀行 (Digital Banking) */}
-        <button
-          id="btn-withdraw-online"
-          onClick={() => setActiveTab('online_bank')}
-          className={`flex items-center justify-center space-x-2.5 px-6 py-3.5 rounded-lg transition-all duration-200 cursor-pointer text-center border ${
-            activeTab === 'online_bank'
-              ? 'bg-[#242845] border-[#f5a623] ring-1 ring-[#f5a623] shadow-md'
-              : 'bg-[#242845] hover:bg-[#2c3254] border-[#31375b]'
-          }`}
-        >
-          <div className="flex items-center text-[#f5a623]">
-            <svg className="w-7 h-7 fill-[#f5a623]" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 sm:w-7 sm:h-7 fill-[#f5a623]" viewBox="0 0 24 24">
               <path d="M12 1L2 6v2h20V6L12 1zm-7 9v8h2v-8H5zm5 0v8h2v-8h-2zm5 0v8h2v-8h-2zm5 0v8h2v-8h-2zM2 20v2h20v-2H2z" />
             </svg>
             <ArrowLeftRight className="w-3.5 h-3.5 -ml-1 text-[#f5a623] stroke-[3]" />
           </div>
-          <span className="text-white font-bold text-sm sm:text-base tracking-wide">
-            數位銀行
+          <span className="text-white font-bold text-xs sm:text-base tracking-wide">
+            銀行卡
+          </span>
+        </button>
+
+        {/* 2. 網上銀行 (Online Bank) */}
+        <button
+          id="btn-withdraw-online"
+          onClick={() => setActiveTab('online_bank')}
+          className={`flex-1 flex items-center justify-center space-x-2 px-3 sm:px-6 py-3.5 rounded-lg transition-all duration-200 cursor-pointer text-center ${
+            activeTab === 'online_bank'
+              ? 'bg-[#232845] border-2 border-[#f5a623] shadow-md'
+              : 'bg-[#232845] hover:bg-[#2c3254] border-2 border-transparent'
+          }`}
+        >
+          <div className="flex items-center text-[#f5a623]">
+            <svg className="w-6 h-6 sm:w-7 sm:h-7 fill-[#f5a623]" viewBox="0 0 24 24">
+              <path d="M12 1L2 6v2h20V6L12 1zm-7 9v8h2v-8H5zm5 0v8h2v-8h-2zm5 0v8h2v-8h-2zm5 0v8h2v-8h-2zM2 20v2h20v-2H2z" />
+            </svg>
+            <ArrowLeftRight className="w-3.5 h-3.5 -ml-1 text-[#f5a623] stroke-[3]" />
+          </div>
+          <span className="text-white font-bold text-xs sm:text-base tracking-wide">
+            網上銀行
           </span>
         </button>
 
@@ -154,76 +154,78 @@ export const WithdrawView: React.FC<WithdrawViewProps> = ({
         <button
           id="btn-withdraw-addbank"
           onClick={() => setActiveTab('add_bank')}
-          className={`flex items-center justify-center space-x-2.5 px-6 py-3.5 rounded-lg transition-all duration-200 cursor-pointer text-center border ${
+          className={`flex-1 flex items-center justify-center space-x-2 px-3 sm:px-6 py-3.5 rounded-lg transition-all duration-200 cursor-pointer text-center ${
             activeTab === 'add_bank'
-              ? 'bg-[#242845] border-[#f5a623] ring-1 ring-[#f5a623] shadow-md'
-              : 'bg-[#242845] hover:bg-[#2c3254] border-[#31375b]'
+              ? 'bg-[#232845] border-2 border-[#f5a623] shadow-md'
+              : 'bg-[#232845] hover:bg-[#2c3254] border-2 border-transparent'
           }`}
         >
           <div className="flex items-center text-[#f5a623]">
-            <svg className="w-7 h-7 fill-[#f5a623]" viewBox="0 0 24 24">
+            <svg className="w-6 h-6 sm:w-7 sm:h-7 fill-[#f5a623]" viewBox="0 0 24 24">
               <path d="M12 1L2 6v2h20V6L12 1zm-7 9v8h2v-8H5zm5 0v8h2v-8h-2zm5 0v8h2v-8h-2zm5 0v8h2v-8h-2zM2 20v2h20v-2H2z" />
             </svg>
             <Plus className="w-4 h-4 -ml-1 text-[#f5a623] stroke-[3.5]" />
           </div>
-          <span className="text-white font-bold text-sm sm:text-base tracking-wide">
+          <span className="text-white font-bold text-xs sm:text-base tracking-wide">
             添加銀行
           </span>
+        </button>
+
+        {/* 4. 統一眼睛開關 (以灰底為主) */}
+        <button
+          id="btn-toggle-withdraw-visibility"
+          type="button"
+          onClick={handleToggleWithdrawVisibility}
+          className={`px-3.5 sm:px-4 py-3.5 self-stretch rounded-lg transition-all duration-200 cursor-pointer flex items-center justify-center border active:scale-95 shrink-0 ${
+            isWithdrawRevealed
+              ? 'bg-gray-200 hover:bg-gray-300 border-emerald-500 text-emerald-600 shadow-sm ring-1 ring-emerald-500/30'
+              : 'bg-gray-200 hover:bg-gray-300 border-gray-300 text-gray-600 hover:text-gray-900 shadow-sm'
+          }`}
+          title={isWithdrawRevealed ? '點擊重新遮蔽取款帳號' : (isWithdrawUnlockedInSession ? '點擊解除遮蔽' : '點擊檢視完整卡號')}
+        >
+          {isWithdrawRevealed ? (
+            <Eye className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" />
+          ) : (
+            <EyeOff className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
+          )}
         </button>
       </div>
 
       {/* Main Dark Navy Content Form Area matching screenshot */}
       {activeTab === 'bank_card' && (
-        <div className="w-full max-w-4xl bg-[#232845] rounded-lg border border-[#31375b] p-6 sm:p-8 text-white space-y-6">
-          {/* Top Pill Badge & Single Unified Eye Toggle above AAA */}
-          <div className="flex items-center justify-between">
-            <span className="inline-block bg-[#3c446a] text-white text-xs font-semibold px-4 py-1.5 rounded-xs tracking-wider">
+        <div className="w-full max-w-4xl bg-[#232845] rounded-xl border border-[#31375b] p-6 sm:p-8 text-white space-y-6 shadow-sm">
+          {/* Top Pill Badge matching screenshot */}
+          <div className="flex items-center">
+            <span className="inline-block bg-[#3c446a] text-white text-xs font-semibold px-4 py-1.5 rounded-sm tracking-wider">
               銀行資料
             </span>
-            <button
-              id="btn-toggle-withdraw-visibility"
-              type="button"
-              onClick={handleToggleWithdrawVisibility}
-              className="flex items-center space-x-1.5 text-xs text-white bg-white/10 hover:bg-white/20 active:scale-95 px-3 py-1.5 rounded-md transition-all cursor-pointer border border-white/10 shadow-xs"
-              title={isWithdrawRevealed ? '點擊重新遮蔽取款帳號' : (isWithdrawUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整卡號')}
-            >
-              {isWithdrawRevealed ? (
-                <>
-                  <Eye className="w-4 h-4 text-emerald-400" />
-                  <span className="font-medium text-emerald-300">遮蔽</span>
-                </>
-              ) : (
-                <>
-                  <EyeOff className="w-4 h-4 text-gray-300" />
-                  <span className="font-medium text-gray-200">
-                    {isWithdrawUnlockedInSession ? '顯示' : '解鎖'}
-                  </span>
-                </>
-              )}
-            </button>
           </div>
 
           {/* Bank Info Table matching screenshot */}
           <div className="space-y-3 text-xs sm:text-sm border-b border-[#31375b] pb-4">
             <div className="flex items-center justify-between">
-              <span className="text-gray-300 font-medium w-32">真實姓名</span>
-              <span className="text-white font-semibold text-right flex-1">{user.realName || 'AAA'}</span>
+              <span className="text-gray-300 font-medium">真實姓名</span>
+              <span className="text-white font-semibold text-right">{user.realName || 'AAA'}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-gray-300 font-medium w-32">銀行名稱</span>
-              <span className="text-white font-semibold text-right flex-1">ABBANK</span>
+              <span className="text-gray-300 font-medium">銀行名稱</span>
+              <span className="text-white font-semibold text-right">ABBANK</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-gray-300 font-medium w-32">省份</span>
-              <span className="text-white font-semibold text-right flex-1">-</span>
+              <span className="text-gray-300 font-medium">省份</span>
+              <span className="text-white font-semibold text-right">-</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-300 font-medium">縣市</span>
+              <span className="text-white font-semibold text-right">147</span>
             </div>
             <div className="flex items-center justify-between py-1 border-t border-[#31375b]/60">
-              <span className="text-gray-300 font-medium w-32">銀行帳號</span>
+              <span className="text-gray-300 font-medium">銀行帳號</span>
               <div className="flex items-center text-right">
                 <span 
                   className={`text-white font-mono font-bold text-sm sm:text-base tracking-wider ${!isWithdrawRevealed ? 'cursor-pointer hover:text-sky-300 transition-colors' : ''}`}
                   onClick={!isWithdrawRevealed ? handleToggleWithdrawVisibility : undefined}
-                  title={!isWithdrawRevealed ? (isWithdrawUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整卡號') : undefined}
+                  title={!isWithdrawRevealed ? (isWithdrawUnlockedInSession ? '點擊解除遮蔽' : '點擊檢視完整卡號') : undefined}
                 >
                   {isWithdrawRevealed
                     ? user.fullBankAccount || '01398829142432'
@@ -251,54 +253,69 @@ export const WithdrawView: React.FC<WithdrawViewProps> = ({
               <label className="block text-xs sm:text-sm font-semibold text-gray-200">
                 取款方式
               </label>
-              <div className="space-y-2 text-xs sm:text-sm text-gray-200">
+              <div className="space-y-2.5 text-xs sm:text-sm text-gray-200">
                 <label className="flex items-center space-x-2.5 cursor-pointer select-none">
+                  <span className="relative flex items-center justify-center w-4 h-4 rounded-full border border-gray-300 bg-transparent">
+                    {selectedBankOption === 'ABBANK' && (
+                      <span className="w-2.5 h-2.5 rounded-full bg-sky-500 ring-2 ring-[#232845]" />
+                    )}
+                  </span>
                   <input
                     type="radio"
                     name="withdrawBank"
                     checked={selectedBankOption === 'ABBANK'}
                     onChange={() => setSelectedBankOption('ABBANK')}
-                    className="w-4 h-4 text-sky-500 bg-transparent border-gray-400 focus:ring-0 cursor-pointer"
+                    className="sr-only"
                   />
                   <span className="font-semibold text-white">ABBANK</span>
                 </label>
 
                 <label className="flex items-center space-x-2.5 cursor-pointer select-none">
+                  <span className="relative flex items-center justify-center w-4 h-4 rounded-full border border-gray-400 bg-transparent">
+                    {selectedBankOption === 'AMAR' && (
+                      <span className="w-2.5 h-2.5 rounded-full bg-sky-500 ring-2 ring-[#232845]" />
+                    )}
+                  </span>
                   <input
                     type="radio"
                     name="withdrawBank"
                     checked={selectedBankOption === 'AMAR'}
                     onChange={() => setSelectedBankOption('AMAR')}
-                    className="w-4 h-4 text-sky-500 bg-transparent border-gray-400 focus:ring-0 cursor-pointer"
+                    className="sr-only"
                   />
                   <span>AMAR</span>
                 </label>
 
                 <label className="flex items-center space-x-2.5 cursor-pointer select-none">
+                  <span className="relative flex items-center justify-center w-4 h-4 rounded-full border border-gray-400 bg-transparent">
+                    {selectedBankOption === 'ACB' && (
+                      <span className="w-2.5 h-2.5 rounded-full bg-sky-500 ring-2 ring-[#232845]" />
+                    )}
+                  </span>
                   <input
                     type="radio"
                     name="withdrawBank"
                     checked={selectedBankOption === 'ACB'}
                     onChange={() => setSelectedBankOption('ACB')}
-                    className="w-4 h-4 text-sky-500 bg-transparent border-gray-400 focus:ring-0 cursor-pointer"
+                    className="sr-only"
                   />
                   <span>ACB BANK(快速到帳)</span>
                 </label>
               </div>
             </div>
 
-            {/* Balance & Limits 2-Column */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm pt-2">
+            {/* Balance & Limits 2-Column matching screenshot */}
+            <div className="grid grid-cols-2 gap-4 text-xs sm:text-sm pt-2">
               <div>
                 <span className="block text-gray-300 font-medium mb-1">帳戶餘額</span>
-                <span className="text-white font-bold tracking-wide">
-                  {user.currency}{user.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                <span className="text-white font-bold tracking-wide text-sm sm:text-base">
+                  {user.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
               <div>
                 <span className="block text-gray-300 font-medium mb-1">取款限額</span>
-                <span className="text-white font-bold tracking-wide">
-                  {user.currency}1.00 以上
+                <span className="text-white font-bold tracking-wide text-sm sm:text-base">
+                  1 以上
                 </span>
               </div>
             </div>
@@ -389,32 +406,11 @@ export const WithdrawView: React.FC<WithdrawViewProps> = ({
       {/* Online Banking Tab - Matching screenshot */}
       {activeTab === 'online_bank' && (
         <div className="w-full max-w-4xl bg-[#232845] rounded-lg border border-[#31375b] p-6 sm:p-8 text-white space-y-6 animate-in fade-in duration-150">
-          {/* Top Pill Badge & Single Unified Eye Toggle */}
-          <div className="flex items-center justify-between">
-            <span className="inline-block bg-[#3c446a] text-white text-xs font-semibold px-4 py-1.5 rounded-xs tracking-wider">
+          {/* Top Pill Badge */}
+          <div className="flex items-center">
+            <span className="inline-block bg-[#3c446a] text-white text-xs font-semibold px-4 py-1.5 rounded-sm tracking-wider">
               數位銀行資料
             </span>
-            <button
-              id="btn-toggle-online-withdraw-visibility"
-              type="button"
-              onClick={handleToggleWithdrawVisibility}
-              className="flex items-center space-x-1.5 text-xs text-white bg-white/10 hover:bg-white/20 active:scale-95 px-3 py-1.5 rounded-md transition-all cursor-pointer border border-white/10 shadow-xs"
-              title={isWithdrawRevealed ? '點擊重新遮蔽取款帳號' : (isWithdrawUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整帳號')}
-            >
-              {isWithdrawRevealed ? (
-                <>
-                  <Eye className="w-4 h-4 text-emerald-400" />
-                  <span className="font-medium text-emerald-300">遮蔽</span>
-                </>
-              ) : (
-                <>
-                  <EyeOff className="w-4 h-4 text-gray-300" />
-                  <span className="font-medium text-gray-200">
-                    {isWithdrawUnlockedInSession ? '顯示' : '解鎖'}
-                  </span>
-                </>
-              )}
-            </button>
           </div>
 
           {/* Bank Info Table for Online Bank */}
@@ -481,17 +477,17 @@ export const WithdrawView: React.FC<WithdrawViewProps> = ({
             </div>
 
             {/* Balance & Limits 2-Column */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs sm:text-sm pt-2">
+            <div className="grid grid-cols-2 gap-4 text-xs sm:text-sm pt-2">
               <div>
                 <span className="block text-gray-300 font-medium mb-1">帳戶餘額</span>
-                <span className="text-white font-bold tracking-wide">
-                  {user.currency}{user.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                <span className="text-white font-bold tracking-wide text-sm sm:text-base">
+                  {user.balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
               <div>
                 <span className="block text-gray-300 font-medium mb-1">取款限額</span>
-                <span className="text-white font-bold tracking-wide">
-                  {user.currency}1.00 以上
+                <span className="text-white font-bold tracking-wide text-sm sm:text-base">
+                  1 以上
                 </span>
               </div>
             </div>

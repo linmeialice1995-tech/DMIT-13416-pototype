@@ -463,21 +463,13 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
               id="btn-toggle-profile-visibility"
               type="button"
               onClick={handleToggleProfileVisibility}
-              className="z-10 flex items-center space-x-1.5 text-xs text-white bg-white/15 hover:bg-white/25 active:scale-95 px-2.5 py-1 rounded-md transition-all cursor-pointer shadow-2xs"
+              className="z-10 p-1.5 text-white/80 hover:text-white bg-white/15 hover:bg-white/25 active:scale-95 rounded-md transition-all cursor-pointer shadow-2xs flex items-center justify-center"
               title={isProfileRevealed ? '點擊重新遮蔽資料' : (isProfileUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整資料')}
             >
               {isProfileRevealed ? (
-                <>
-                  <Eye className="w-4 h-4 text-emerald-400" />
-                  <span className="font-medium text-emerald-300">遮蔽</span>
-                </>
+                <Eye className="w-4 h-4 text-emerald-400" />
               ) : (
-                <>
-                  <EyeOff className="w-4 h-4 text-gray-300" />
-                  <span className="font-medium text-gray-200">
-                    {isProfileUnlockedInSession ? '顯示' : '解鎖'}
-                  </span>
-                </>
+                <EyeOff className="w-4 h-4 text-gray-300" />
               )}
             </button>
           ) : currentSubView === 'withdraw_account' ? (
@@ -485,21 +477,13 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
               id="btn-toggle-withdraw-account-visibility"
               type="button"
               onClick={handleToggleWithdrawAccountVisibility}
-              className="z-10 flex items-center space-x-1.5 text-xs text-white bg-white/15 hover:bg-white/25 active:scale-95 px-2.5 py-1 rounded-md transition-all cursor-pointer shadow-2xs"
+              className="z-10 p-1.5 text-white/80 hover:text-white bg-white/15 hover:bg-white/25 active:scale-95 rounded-md transition-all cursor-pointer shadow-2xs flex items-center justify-center"
               title={isWithdrawAccountRevealed ? '點擊重新遮蔽帳號' : (isWithdrawAccountUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整帳號')}
             >
               {isWithdrawAccountRevealed ? (
-                <>
-                  <Eye className="w-4 h-4 text-emerald-400" />
-                  <span className="font-medium text-emerald-300">遮蔽</span>
-                </>
+                <Eye className="w-4 h-4 text-emerald-400" />
               ) : (
-                <>
-                  <EyeOff className="w-4 h-4 text-gray-300" />
-                  <span className="font-medium text-gray-200">
-                    {isWithdrawAccountUnlockedInSession ? '顯示' : '解鎖'}
-                  </span>
-                </>
+                <EyeOff className="w-4 h-4 text-gray-300" />
               )}
             </button>
           ) : (
@@ -784,19 +768,13 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
                       <button
                         type="button"
                         onClick={handleToggleWithdrawAccountVisibility}
-                        className="flex items-center space-x-1 text-xs text-gray-500 hover:text-gray-800 p-0.5 rounded transition-colors cursor-pointer"
+                        className="p-0.5 text-gray-400 hover:text-gray-700 rounded transition-colors cursor-pointer"
                         title={isWithdrawAccountRevealed ? '點擊重新遮蔽銀行卡號' : (isWithdrawAccountUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整卡號')}
                       >
                         {isWithdrawAccountRevealed ? (
-                          <>
-                            <Eye className="w-3.5 h-3.5 text-emerald-600" />
-                            <span className="text-emerald-700 font-medium">遮蔽</span>
-                          </>
+                          <Eye className="w-3.5 h-3.5 text-emerald-600" />
                         ) : (
-                          <>
-                            <EyeOff className="w-3.5 h-3.5 text-gray-400" />
-                            <span>{isWithdrawAccountUnlockedInSession ? '顯示' : '解鎖'}</span>
-                          </>
+                          <EyeOff className="w-3.5 h-3.5 text-gray-400" />
                         )}
                       </button>
                     </div>
@@ -864,19 +842,13 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
                       <button
                         type="button"
                         onClick={handleToggleWithdrawAccountVisibility}
-                        className="flex items-center space-x-1 text-xs text-gray-500 hover:text-gray-800 p-0.5 rounded transition-colors cursor-pointer"
+                        className="p-0.5 text-gray-400 hover:text-gray-700 rounded transition-colors cursor-pointer"
                         title={isWithdrawAccountRevealed ? '點擊重新遮蔽帳號' : (isWithdrawAccountUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整帳號')}
                       >
                         {isWithdrawAccountRevealed ? (
-                          <>
-                            <Eye className="w-3.5 h-3.5 text-emerald-600" />
-                            <span className="text-emerald-700 font-medium">遮蔽</span>
-                          </>
+                          <Eye className="w-3.5 h-3.5 text-emerald-600" />
                         ) : (
-                          <>
-                            <EyeOff className="w-3.5 h-3.5 text-gray-400" />
-                            <span>{isWithdrawAccountUnlockedInSession ? '顯示' : '解鎖'}</span>
-                          </>
+                          <EyeOff className="w-3.5 h-3.5 text-gray-400" />
                         )}
                       </button>
                     </div>
