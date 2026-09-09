@@ -210,7 +210,10 @@ export function loadPersistedUser(fallbackUser: UserProfile): UserProfile {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY_USER);
     if (raw) {
-      return { ...fallbackUser, ...JSON.parse(raw) };
+      const parsed = JSON.parse(raw);
+      delete parsed.withdrawPassword;
+      window.localStorage.setItem(STORAGE_KEY_USER, JSON.stringify({ ...parsed, withdrawPassword: '' }));
+      return { ...fallbackUser, ...parsed, withdrawPassword: '' };
     }
   } catch {
     // Ignore
@@ -221,7 +224,7 @@ export function loadPersistedUser(fallbackUser: UserProfile): UserProfile {
 export function savePersistedUser(user: UserProfile): void {
   if (typeof window === 'undefined' || !window.localStorage) return;
   try {
-    window.localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
+    window.localStorage.setItem(STORAGE_KEY_USER, JSON.stringify({ ...user, withdrawPassword: user.withdrawPassword || '' }));
   } catch {
     // Ignore
   }

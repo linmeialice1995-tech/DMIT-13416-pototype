@@ -643,6 +643,7 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
                     value={oldPassword}
                     onChange={(e) => setOldPassword(e.target.value)}
                     placeholder="請輸入目前密碼"
+                    autoComplete="off"
                     className="w-full pl-3 pr-10 py-2 border border-gray-300 rounded text-sm focus:border-sky-500 focus:outline-hidden"
                   />
                   <button
@@ -665,6 +666,7 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="6-20 位英文或數字"
+                    autoComplete="new-password"
                     className="w-full pl-3 pr-10 py-2 border border-gray-300 rounded text-sm focus:border-sky-500 focus:outline-hidden"
                   />
                   <button
@@ -687,6 +689,7 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="請再次輸入新密碼"
+                    autoComplete="new-password"
                     className="w-full pl-3 pr-10 py-2 border border-gray-300 rounded text-sm focus:border-sky-500 focus:outline-hidden"
                   />
                   <button
@@ -724,6 +727,7 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
                     value={newPin}
                     onChange={(e) => setNewPin(e.target.value)}
                     placeholder="請輸入 6 位純數字"
+                    autoComplete="new-password"
                     className="w-full pl-3 pr-10 py-2 border border-gray-300 rounded text-sm focus:border-sky-500 focus:outline-hidden tracking-widest text-center font-bold"
                   />
                   <button
@@ -747,6 +751,7 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
                     value={confirmPin}
                     onChange={(e) => setConfirmPin(e.target.value)}
                     placeholder="請再次輸入 6 位純數字"
+                    autoComplete="new-password"
                     className="w-full pl-3 pr-10 py-2 border border-gray-300 rounded text-sm focus:border-sky-500 focus:outline-hidden tracking-widest text-center font-bold"
                   />
                   <button

@@ -631,6 +631,7 @@ export const MobileWithdrawView: React.FC<MobileWithdrawViewProps> = ({
                     value={pin}
                     onChange={(e) => setPin(e.target.value)}
                     placeholder="请输入取款密码"
+                    autoComplete="new-password"
                     className="w-full bg-[#e8eaed] text-gray-900 placeholder:text-gray-500 rounded-md px-3 py-2.5 text-xs font-semibold focus:outline-hidden focus:ring-2 focus:ring-red-500 tracking-wider"
                   />
                   <button

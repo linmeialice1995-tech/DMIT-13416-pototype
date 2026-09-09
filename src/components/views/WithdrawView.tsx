@@ -385,6 +385,7 @@ export const WithdrawView: React.FC<WithdrawViewProps> = ({
                   value={withdrawPin}
                   onChange={(e) => setWithdrawPin(e.target.value)}
                   placeholder="請輸入您的取款密碼"
+                  autoComplete="new-password"
                   className="w-full bg-white text-gray-900 px-3.5 py-2.5 pr-10 rounded-sm text-sm placeholder:text-gray-400 focus:outline-hidden focus:ring-2 focus:ring-[#f5a623]"
                 />
                 <button
@@ -557,6 +558,7 @@ export const WithdrawView: React.FC<WithdrawViewProps> = ({
                   value={withdrawPin}
                   onChange={(e) => setWithdrawPin(e.target.value)}
                   placeholder="請輸入您的取款密碼"
+                  autoComplete="new-password"
                   className="w-full bg-white text-gray-900 px-3.5 py-2.5 pr-10 rounded-sm text-sm placeholder:text-gray-400 focus:outline-hidden focus:ring-2 focus:ring-[#f5a623]"
                 />
                 <button
