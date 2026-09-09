@@ -62,7 +62,7 @@ const DEFAULT_USER: UserProfile = {
   onlineBankAccount: '*****************24324',
   fullOnlineBankAccount: 'PIX-082914243249021',
   isOnlineBankRevealed: false,
-  withdrawPassword: '123456',
+  withdrawPassword: '',
   unreadMessages: 1,
   unreadAnnouncements: 2,
 };

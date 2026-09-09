@@ -134,8 +134,8 @@ export const MobileWithdrawView: React.FC<MobileWithdrawViewProps> = ({
       onShowToast('請輸入取款密碼', 'error');
       return;
     }
-    const correctPin = user.withdrawPassword || '123456';
-    if (pin !== correctPin && pin !== '123456') {
+    const correctPin = user.withdrawPassword || '';
+    if (correctPin && pin !== correctPin) {
       onShowToast('取款密碼錯誤，請重新輸入', 'error');
       return;
     }
@@ -917,7 +917,7 @@ export const MobileWithdrawView: React.FC<MobileWithdrawViewProps> = ({
       <PasswordVerificationModal
         isOpen={pinModalTarget !== null}
         targetType={pinModalTarget}
-        correctPin={user.withdrawPassword || '123456'}
+        correctPin={user.withdrawPassword || ''}
         onSuccess={handleVerificationSuccess}
         onClose={() => setPinModalTarget(null)}
         onShowToast={onShowToast}

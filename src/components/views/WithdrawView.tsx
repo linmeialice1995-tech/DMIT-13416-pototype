@@ -664,7 +664,7 @@ export const WithdrawView: React.FC<WithdrawViewProps> = ({
         isOpen={pinModalTarget !== null}
         onClose={() => setPinModalTarget(null)}
         targetType={pinModalTarget}
-        correctPin={user.withdrawPassword || '123456'}
+        correctPin={user.withdrawPassword || ''}
         onSuccess={handleVerificationSuccess}
         onShowToast={onShowToast}
       />

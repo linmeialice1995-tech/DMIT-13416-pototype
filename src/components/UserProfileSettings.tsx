@@ -71,7 +71,7 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Pin Form State
-  const [currentPin, setCurrentPin] = useState(user.withdrawPassword || '123456');
+  const [currentPin, setCurrentPin] = useState(user.withdrawPassword || '');
   const [newPin, setNewPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const [showNewPin, setShowNewPin] = useState(false);
@@ -325,7 +325,7 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
         subtitle="請輸入綁定的取款密碼進行解鎖"
         fieldLabel="取款密碼"
         submitButtonText="確認"
-        correctPin={user.withdrawPassword || currentPin || '123456'}
+        correctPin={user.withdrawPassword || currentPin || ''}
         onSuccess={handleVerificationSuccess}
         onShowToast={onShowToast}
       />

@@ -26,7 +26,7 @@ export const PasswordVerificationModal: React.FC<PasswordVerificationModalProps>
   onClose,
   targetType,
   targetTitle,
-  correctPin = '123456',
+  correctPin = '',
   onSuccess,
   onShowToast,
   mode,
@@ -91,9 +91,8 @@ export const PasswordVerificationModal: React.FC<PasswordVerificationModalProps>
       return;
     }
 
-    const validPin = (correctPin || '123456').trim();
-    // Allow '123456' as standard fallback
-    if (entered !== validPin && entered !== '123456' && entered !== '888888') {
+    const validPin = (correctPin || '').trim();
+    if (validPin && entered !== validPin) {
       setError(is2FAMode ? '驗證碼錯誤，請再試一次' : '密碼錯誤，請再試一次');
       return;
     }
