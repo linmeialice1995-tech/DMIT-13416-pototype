@@ -129,7 +129,7 @@ export const WithdrawView: React.FC<WithdrawViewProps> = ({
           </span>
         </button>
 
-        {/* 2. 網上銀行 (Online Bank) */}
+        {/* 2. 數位銀行 (Digital Bank) */}
         <button
           id="btn-withdraw-online"
           onClick={() => setActiveTab('online_bank')}
@@ -146,7 +146,7 @@ export const WithdrawView: React.FC<WithdrawViewProps> = ({
             <ArrowLeftRight className="w-3.5 h-3.5 -ml-1 text-[#f5a623] stroke-[3]" />
           </div>
           <span className="text-white font-bold text-xs sm:text-base tracking-wide">
-            網上銀行
+            數位銀行
           </span>
         </button>
 
@@ -420,7 +420,7 @@ export const WithdrawView: React.FC<WithdrawViewProps> = ({
               <span className="text-white font-semibold text-right flex-1">PIX-CPF</span>
             </div>
             <div className="flex items-center justify-between py-1 border-t border-[#31375b]/60">
-              <span className="text-gray-300 font-medium w-32">數字帳號</span>
+              <span className="text-gray-300 font-medium w-32">數字</span>
               <div className="flex items-center text-right">
                 <span 
                   className={`text-white font-mono font-bold text-sm sm:text-base tracking-wider ${!isWithdrawRevealed ? 'cursor-pointer hover:text-sky-300 transition-colors' : ''}`}

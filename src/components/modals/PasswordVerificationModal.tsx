@@ -55,7 +55,7 @@ export const PasswordVerificationModal: React.FC<PasswordVerificationModalProps>
     subtitle ||
     (is2FAMode
       ? '請打開綁定的認證應用程式獲取驗證碼'
-      : '請輸入綁定的取款密碼進行驗證');
+      : '請輸入綁定的取款密碼進行解鎖');
 
   const resolvedFieldLabel =
     fieldLabel || (is2FAMode ? '二階段驗證碼' : '取款密碼');

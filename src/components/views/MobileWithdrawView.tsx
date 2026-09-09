@@ -282,7 +282,7 @@ export const MobileWithdrawView: React.FC<MobileWithdrawViewProps> = ({
 
       {/* 4. Main Body Container */}
       <div className="flex-1 px-4 py-4 space-y-4 max-w-md mx-auto w-full">
-        {/* Sub-tabs: 银行卡 | 網上銀行 | 添加银行 + 统一眼睛开关 */}
+        {/* Sub-tabs: 银行卡 | 數位銀行 | 添加银行 + 统一眼睛开关 */}
         <div className="flex items-center space-x-2">
           <div className="grid grid-cols-3 gap-1.5 flex-1">
             <button
@@ -308,7 +308,7 @@ export const MobileWithdrawView: React.FC<MobileWithdrawViewProps> = ({
               }`}
             >
               <CreditCard className="w-3.5 h-3.5 stroke-[2.2]" />
-              <span>網上銀行</span>
+              <span>數位銀行</span>
             </button>
 
             <button
