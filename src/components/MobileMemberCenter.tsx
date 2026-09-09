@@ -26,6 +26,7 @@ import {
   Wifi,
   ChevronRight,
   ArrowLeft,
+  Sliders,
 } from 'lucide-react';
 import { SidebarMenuKey, UserProfile, MainNavTab, GameItem } from '../types';
 
@@ -454,7 +455,7 @@ export const MobileMemberCenter: React.FC<MobileMemberCenterProps> = ({
       )}
 
       {/* Floating Right Signal/WiFi indicator tool */}
-      <div className="fixed right-0 top-1/3 z-20">
+      <div className="absolute right-0 top-1/3 z-20">
         <button
           onClick={onOpenCustomerService}
           className="bg-[#242938]/90 hover:bg-[#242938] text-white p-2 rounded-l-lg shadow-lg border-l border-y border-gray-600 flex items-center justify-center cursor-pointer transition-transform hover:scale-105"
@@ -465,7 +466,7 @@ export const MobileMemberCenter: React.FC<MobileMemberCenterProps> = ({
       </div>
 
       {/* 6. Bottom Navigation Bar (5 tabs in bright red) */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#e00000] border-t border-[#b80000] shadow-2xl flex items-center justify-around py-1.5 px-1 select-none">
+      <nav className="fixed sm:sticky bottom-0 left-1/2 -translate-x-1/2 sm:left-0 sm:translate-x-0 w-full max-w-[430px] sm:max-w-none z-40 bg-[#e00000] border-t border-[#b80000] shadow-2xl flex items-center justify-around py-1.5 px-1 select-none mt-auto">
         {/* 1. 首页 */}
         <button
           id="btn-bottom-nav-home"

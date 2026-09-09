@@ -15,6 +15,7 @@ import {
   HandCoins,
   RefreshCw,
   UserCheck,
+  Sliders,
 } from 'lucide-react';
 import { SidebarMenuKey, UserProfile } from '../types';
 

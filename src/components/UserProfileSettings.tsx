@@ -3,28 +3,40 @@ import { Eye, EyeOff, Lock, X, CreditCard, Wallet, Plus, Check, Wifi } from 'luc
 import { UserProfile } from '../types';
 import { SecurityMenuView, SecurityMenuKey } from './views/SecurityMenuView';
 import { PasswordVerificationModal, SensitiveTargetType } from './modals/PasswordVerificationModal';
+import { MemberFieldConfig } from './views/MemberSettingsView';
 
 export type SecuritySubView = 'menu' | 'password' | 'pin' | 'withdraw_account' | 'profile' | '2fa';
 
 interface UserProfileSettingsProps {
   user: UserProfile;
   initialSubView?: SecuritySubView;
+  onSubViewChange?: (subView: SecuritySubView) => void;
   onUpdateUser: (updated: Partial<UserProfile>) => void;
   onShowToast: (msg: string, type?: 'success' | 'info' | 'error') => void;
   onBack?: () => void;
   isMobile?: boolean;
+  memberFields?: MemberFieldConfig[];
+  isViewEncryptedInfoEnabled?: boolean;
 }
 
 export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
   user,
   initialSubView = 'menu',
+  onSubViewChange,
   onUpdateUser,
   onShowToast,
   onBack,
   isMobile,
+  memberFields,
+  isViewEncryptedInfoEnabled = true,
 }) => {
   // Default to 'menu' so the 5 cards from the screenshot show immediately
   const [currentSubView, setCurrentSubView] = useState<SecuritySubView>(initialSubView);
+
+  const handleSetSubView = (sub: SecuritySubView) => {
+    setCurrentSubView(sub);
+    onSubViewChange?.(sub);
+  };
 
   // Responsive device detection fallback
   const [windowIsMobile, setWindowIsMobile] = useState(() => {
@@ -94,7 +106,17 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
   const [isWithdrawAccountRevealed, setIsWithdrawAccountRevealed] = useState(false);
   const [isWithdrawAccountUnlockedInSession, setIsWithdrawAccountUnlockedInSession] = useState(false);
 
-  // When leaving the subview page, reset authentication and mask state
+  // Dynamic backend-controlled display switches for 基本資料
+  const phoneField = memberFields?.find((f) => f.id === 'phone');
+  const showPhoneInProfile = phoneField ? phoneField.profileDisplay === true : true;
+
+  const emailField = memberFields?.find((f) => f.id === 'email');
+  const showEmailInProfile = emailField ? emailField.profileDisplay === true : true;
+
+  // Whether there is any sensitive/encrypted field displayed in 基本資料 (手機或電郵)
+  const hasEncryptedFieldInProfile = showPhoneInProfile || showEmailInProfile;
+
+  // When leaving the subview page or when view encrypted info is disabled, reset authentication and mask state
   useEffect(() => {
     if (currentSubView !== 'profile') {
       setIsProfileRevealed(false);
@@ -105,6 +127,15 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
       setIsWithdrawAccountUnlockedInSession(false);
     }
   }, [currentSubView]);
+
+  useEffect(() => {
+    if (!isViewEncryptedInfoEnabled) {
+      setIsProfileRevealed(false);
+      setIsProfileUnlockedInSession(false);
+      setIsWithdrawAccountRevealed(false);
+      setIsWithdrawAccountUnlockedInSession(false);
+    }
+  }, [isViewEncryptedInfoEnabled]);
 
   const handleSavePassword = (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,7 +155,7 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
     setNewPassword('');
     setConfirmPassword('');
     onShowToast('登入密碼修改成功！', 'success');
-    setCurrentSubView('menu');
+    handleSetSubView('menu');
   };
 
   const handleSavePin = (e: React.FormEvent) => {
@@ -142,7 +173,7 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
     setNewPin('');
     setConfirmPin('');
     onShowToast('提款密碼設置成功！', 'success');
-    setCurrentSubView('menu');
+    handleSetSubView('menu');
   };
 
   const handleSaveWithdrawAccount = (e: React.FormEvent) => {
@@ -170,10 +201,18 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
       });
       onShowToast('線上取款帳號更新成功！', 'success');
     }
-    setCurrentSubView('menu');
+    handleSetSubView('menu');
   };
 
   const handleToggleProfileVisibility = () => {
+    if (!hasEncryptedFieldInProfile) {
+      onShowToast('目前基本資料未顯示手機或電郵等加密欄位', 'info');
+      return;
+    }
+    if (!isViewEncryptedInfoEnabled) {
+      onShowToast('後台已關閉會員加密資訊「查看」功能（False），暫不開放入文檢視', 'info');
+      return;
+    }
     if (isProfileRevealed) {
       // 主動點 👁 重新遮蔽：直接遮蔽，保留當前頁面授權，不用再次輸入密碼
       setIsProfileRevealed(false);
@@ -191,6 +230,10 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
   };
 
   const handleToggleWithdrawAccountVisibility = () => {
+    if (!isViewEncryptedInfoEnabled) {
+      onShowToast('後台已關閉會員加密資訊「查看」功能（False），暫不開放卡號檢視', 'info');
+      return;
+    }
     if (isWithdrawAccountRevealed) {
       // 主動點 👁 重新遮蔽：直接遮蔽，保留當前頁面授權，不用再次輸入密碼
       setIsWithdrawAccountRevealed(false);
@@ -234,7 +277,7 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
       setTwoFactorEnabled(true);
       setTwoFactorCode('');
       onShowToast('二階段驗證已啟用！', 'success');
-      setCurrentSubView('menu');
+      handleSetSubView('menu');
     } else {
       setTwoFactorEnabled(false);
       onShowToast('已關閉二階段驗證', 'info');
@@ -260,7 +303,7 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
         titlePrefix="您已開啟"
         highlightText="隱蔽資料"
         titleSuffix="保護"
-        subtitle="請打開綁定的認證應用程式獲取驗證碼"
+        subtitle="請輸入綁定的取款密碼進行解鎖"
         fieldLabel="二階段驗證碼"
         submitButtonText="登入"
         onSuccess={() => {
@@ -299,7 +342,7 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
             if (sub === '2fa') {
               setIs2FAModalOpen(true);
             } else {
-              setCurrentSubView(sub);
+              handleSetSubView(sub);
             }
           }}
           onClose={onBack}
@@ -325,7 +368,7 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
           <button
             id="btn-close-profile-subview"
             type="button"
-            onClick={() => setCurrentSubView('menu')}
+            onClick={() => handleSetSubView('menu')}
             className="absolute right-4 w-7 h-7 rounded-full bg-white flex items-center justify-center text-[#8b0000] hover:bg-gray-100 active:scale-95 transition-transform cursor-pointer shadow-md"
             title="關閉返回"
           >
@@ -337,23 +380,29 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
         <div className="w-full flex-1 bg-[#480004] px-4 py-6 flex flex-col max-w-md mx-auto relative">
           {/* White Card Container matching screenshot with Eye button at top-right */}
           <div className="w-full bg-white rounded-md shadow-md p-5 text-gray-900 relative">
-            {/* Field 1: 真实姓名 with Eye Toggle at top-right of the white box */}
+            {/* Field 1: 真实姓名 with Eye Toggle at top-right of the white box (Only rendered when encrypted fields exist and feature is enabled) */}
             <div>
               <div className="flex items-center justify-between text-sm font-medium text-gray-800">
                 <span>真实姓名</span>
-                <button
-                  id="btn-toggle-profile-visibility"
-                  type="button"
-                  onClick={handleToggleProfileVisibility}
-                  className="p-1 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100 active:scale-95 transition-all cursor-pointer inline-flex items-center"
-                  title={isProfileRevealed ? '點擊重新遮蔽資料' : (isProfileUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整資料')}
-                >
-                  {isProfileRevealed ? (
-                    <Eye className="w-4.5 h-4.5 text-emerald-600" />
-                  ) : (
-                    <EyeOff className="w-4.5 h-4.5 text-gray-400" />
-                  )}
-                </button>
+                {hasEncryptedFieldInProfile && isViewEncryptedInfoEnabled && (
+                  <button
+                    id="btn-toggle-profile-visibility"
+                    type="button"
+                    onClick={handleToggleProfileVisibility}
+                    className="p-1 rounded-md active:scale-95 transition-all cursor-pointer inline-flex items-center text-gray-500 hover:text-gray-800 hover:bg-gray-100"
+                    title={
+                      isProfileRevealed
+                        ? '點擊重新遮蔽資料'
+                        : (isProfileUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整資料')
+                    }
+                  >
+                    {isProfileRevealed ? (
+                      <Eye className="w-4.5 h-4.5 text-emerald-600" />
+                    ) : (
+                      <EyeOff className="w-4.5 h-4.5 text-gray-400" />
+                    )}
+                  </button>
+                )}
               </div>
               <div className="text-sm text-gray-900 mt-2.5 mb-3 font-normal">
                 {user.realName || 'AAA'}
@@ -361,39 +410,43 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
               <div className="border-b border-gray-200" />
             </div>
 
-            {/* Field 2: 手机号码 */}
-            <div>
-              <div className="text-sm font-medium text-gray-800 mt-3.5">
-                手机号码
+            {/* Field 2: 手机号码 (依後台會員設定「基本資料顯示」決定) */}
+            {showPhoneInProfile && (
+              <div>
+                <div className="text-sm font-medium text-gray-800 mt-3.5">
+                  手机号码
+                </div>
+                <div 
+                  className={`text-sm text-gray-900 mt-2.5 mb-3 font-mono ${isViewEncryptedInfoEnabled && !isProfileRevealed ? 'cursor-pointer hover:text-sky-600 transition-colors' : ''}`}
+                  onClick={isViewEncryptedInfoEnabled && !isProfileRevealed ? handleToggleProfileVisibility : undefined}
+                  title={isViewEncryptedInfoEnabled && !isProfileRevealed ? '點擊右上角眼睛或點此解鎖完整號碼' : undefined}
+                >
+                  {isProfileRevealed
+                    ? user.fullPhone || '+62 19801238902'
+                    : user.phone || '+62 1980***8902'}
+                </div>
+                <div className="border-b border-gray-200" />
               </div>
-              <div 
-                className={`text-sm text-gray-900 mt-2.5 mb-3 font-mono ${!isProfileRevealed ? 'cursor-pointer hover:text-sky-600 transition-colors' : ''}`}
-                onClick={!isProfileRevealed ? handleToggleProfileVisibility : undefined}
-                title={!isProfileRevealed ? '點擊解鎖完整號碼' : undefined}
-              >
-                {isProfileRevealed
-                  ? user.fullPhone || '+62 19801238902'
-                  : user.phone || '+62 1980***8902'}
-              </div>
-              <div className="border-b border-gray-200" />
-            </div>
+            )}
 
-            {/* Field 3: 电子邮箱 */}
-            <div>
-              <div className="text-sm font-medium text-gray-800 mt-3.5">
-                电子邮箱
+            {/* Field 3: 电子邮箱 (依後台會員設定「基本資料顯示」決定) */}
+            {showEmailInProfile && (
+              <div>
+                <div className="text-sm font-medium text-gray-800 mt-3.5">
+                  电子邮箱
+                </div>
+                <div 
+                  className={`text-sm text-gray-900 mt-2.5 mb-3 font-mono ${isViewEncryptedInfoEnabled && !isProfileRevealed ? 'cursor-pointer hover:text-sky-600 transition-colors' : ''}`}
+                  onClick={isViewEncryptedInfoEnabled && !isProfileRevealed ? handleToggleProfileVisibility : undefined}
+                  title={isViewEncryptedInfoEnabled && !isProfileRevealed ? '點擊右上角眼睛或點此解鎖完整郵箱' : undefined}
+                >
+                  {isProfileRevealed
+                    ? user.fullEmail || 'testuser840926@gmail.com'
+                    : user.email || 'te*****om'}
+                </div>
+                <div className="border-b border-gray-200" />
               </div>
-              <div 
-                className={`text-sm text-gray-900 mt-2.5 mb-3 font-mono ${!isProfileRevealed ? 'cursor-pointer hover:text-sky-600 transition-colors' : ''}`}
-                onClick={!isProfileRevealed ? handleToggleProfileVisibility : undefined}
-                title={!isProfileRevealed ? '點擊解鎖完整郵箱' : undefined}
-              >
-                {isProfileRevealed
-                  ? user.fullEmail || 'testuser840926@gmail.com'
-                  : user.email || 'te*****om'}
-              </div>
-              <div className="border-b border-gray-200" />
-            </div>
+            )}
 
             {/* Field 4: 生日 */}
             <div>
@@ -407,7 +460,7 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
           </div>
 
           {/* Right side floating WiFi widget as in screenshot */}
-          <div className="fixed right-0 top-[115px] bg-[#33373d]/90 text-white pl-2 pr-1.5 py-1.5 rounded-l-full flex items-center shadow-lg border-y border-l border-white/20 pointer-events-none z-20">
+          <div className="absolute right-0 top-[115px] bg-[#33373d]/90 text-white pl-2 pr-1.5 py-1.5 rounded-l-full flex items-center shadow-lg border-y border-l border-white/20 pointer-events-none z-20">
             <Wifi className="w-3.5 h-3.5 text-[#30d2e8]" />
           </div>
         </div>
@@ -427,7 +480,7 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
           {/* Back Icon on the far left */}
           <button
             id="btn-back-to-menu"
-            onClick={() => setCurrentSubView('menu')}
+            onClick={() => handleSetSubView('menu')}
             title="返回上一頁"
             className="text-white/90 hover:text-white hover:scale-110 active:scale-95 transition-transform cursor-pointer p-1 z-10"
           >
@@ -459,33 +512,49 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
 
           {/* Unified Single Eye Toggle for 基本資料設定 & 修改取款帳號 on the far right (Desktop) */}
           {currentSubView === 'profile' ? (
-            <button
-              id="btn-toggle-profile-visibility"
-              type="button"
-              onClick={handleToggleProfileVisibility}
-              className="z-10 p-1.5 text-white/80 hover:text-white bg-white/15 hover:bg-white/25 active:scale-95 rounded-md transition-all cursor-pointer shadow-2xs flex items-center justify-center"
-              title={isProfileRevealed ? '點擊重新遮蔽資料' : (isProfileUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整資料')}
-            >
-              {isProfileRevealed ? (
-                <Eye className="w-4 h-4 text-emerald-400" />
-              ) : (
-                <EyeOff className="w-4 h-4 text-gray-300" />
-              )}
-            </button>
+            hasEncryptedFieldInProfile && isViewEncryptedInfoEnabled ? (
+              <button
+                id="btn-toggle-profile-visibility"
+                type="button"
+                onClick={handleToggleProfileVisibility}
+                className="z-10 p-1.5 rounded-md transition-all cursor-pointer shadow-2xs flex items-center justify-center text-white/80 hover:text-white bg-white/15 hover:bg-white/25 active:scale-95"
+                title={
+                  isProfileRevealed
+                    ? '點擊重新遮蔽資料'
+                    : (isProfileUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整資料')
+                }
+              >
+                {isProfileRevealed ? (
+                  <Eye className="w-4 h-4 text-emerald-400" />
+                ) : (
+                  <EyeOff className="w-4 h-4 text-gray-300" />
+                )}
+              </button>
+            ) : (
+              <div className="w-5" />
+            )
           ) : currentSubView === 'withdraw_account' ? (
-            <button
-              id="btn-toggle-withdraw-account-visibility"
-              type="button"
-              onClick={handleToggleWithdrawAccountVisibility}
-              className="z-10 p-1.5 text-white/80 hover:text-white bg-white/15 hover:bg-white/25 active:scale-95 rounded-md transition-all cursor-pointer shadow-2xs flex items-center justify-center"
-              title={isWithdrawAccountRevealed ? '點擊重新遮蔽帳號' : (isWithdrawAccountUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整帳號')}
-            >
-              {isWithdrawAccountRevealed ? (
-                <Eye className="w-4 h-4 text-emerald-400" />
-              ) : (
-                <EyeOff className="w-4 h-4 text-gray-300" />
-              )}
-            </button>
+            isViewEncryptedInfoEnabled ? (
+              <button
+                id="btn-toggle-withdraw-account-visibility"
+                type="button"
+                onClick={handleToggleWithdrawAccountVisibility}
+                className="z-10 p-1.5 rounded-md transition-all cursor-pointer shadow-2xs flex items-center justify-center text-white/80 hover:text-white bg-white/15 hover:bg-white/25 active:scale-95"
+                title={
+                  isWithdrawAccountRevealed
+                    ? '點擊重新遮蔽帳號'
+                    : (isWithdrawAccountUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整帳號')
+                }
+              >
+                {isWithdrawAccountRevealed ? (
+                  <Eye className="w-4 h-4 text-emerald-400" />
+                ) : (
+                  <EyeOff className="w-4 h-4 text-gray-300" />
+                )}
+              </button>
+            ) : (
+              <div className="w-5" />
+            )
           ) : (
             <div className="w-5" />
           )}
@@ -506,41 +575,45 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
                   </td>
                 </tr>
 
-                {/* Row 2: 手機號碼 */}
-                <tr className="border-b border-gray-200">
-                  <td className="w-1/4 sm:w-1/5 px-6 py-4 text-gray-700 font-medium whitespace-nowrap">
-                    手機號碼
-                  </td>
-                  <td className="px-6 py-4 text-gray-900 font-normal">
-                    <span 
-                      className={`font-mono text-xs sm:text-sm ${!isProfileRevealed ? 'cursor-pointer hover:text-sky-600 transition-colors' : ''}`}
-                      onClick={!isProfileRevealed ? handleToggleProfileVisibility : undefined}
-                      title={!isProfileRevealed ? '點擊右上角眼睛或點此解鎖完整號碼' : undefined}
-                    >
-                      {isProfileRevealed
-                        ? user.fullPhone || '+62 19801238902'
-                        : user.phone}
-                    </span>
-                  </td>
-                </tr>
+                {/* Row 2: 手機號碼 (依後台會員設定「基本資料顯示」決定) */}
+                {showPhoneInProfile && (
+                  <tr className="border-b border-gray-200">
+                    <td className="w-1/4 sm:w-1/5 px-6 py-4 text-gray-700 font-medium whitespace-nowrap">
+                      手機號碼
+                    </td>
+                    <td className="px-6 py-4 text-gray-900 font-normal">
+                      <span 
+                        className={`font-mono text-xs sm:text-sm ${isViewEncryptedInfoEnabled && !isProfileRevealed ? 'cursor-pointer hover:text-sky-600 transition-colors' : ''}`}
+                        onClick={isViewEncryptedInfoEnabled && !isProfileRevealed ? handleToggleProfileVisibility : undefined}
+                        title={isViewEncryptedInfoEnabled && !isProfileRevealed ? '點擊右上角眼睛或點此解鎖完整號碼' : undefined}
+                      >
+                        {isProfileRevealed
+                          ? user.fullPhone || '+62 19801238902'
+                          : user.phone}
+                      </span>
+                    </td>
+                  </tr>
+                )}
 
-                {/* Row 3: 電子郵箱 */}
-                <tr className="border-b border-gray-200">
-                  <td className="w-1/4 sm:w-1/5 px-6 py-4 text-gray-700 font-medium whitespace-nowrap">
-                    電子郵箱
-                  </td>
-                  <td className="px-6 py-4 text-gray-900 font-normal">
-                    <span 
-                      className={`font-mono text-xs sm:text-sm ${!isProfileRevealed ? 'cursor-pointer hover:text-sky-600 transition-colors' : ''}`}
-                      onClick={!isProfileRevealed ? handleToggleProfileVisibility : undefined}
-                      title={!isProfileRevealed ? '點擊右上角眼睛或點此解鎖完整郵箱' : undefined}
-                    >
-                      {isProfileRevealed
-                        ? user.fullEmail || 'testuser840926@gmail.com'
-                        : user.email}
-                    </span>
-                  </td>
-                </tr>
+                {/* Row 3: 電子郵箱 (依後台會員設定「基本資料顯示」決定) */}
+                {showEmailInProfile && (
+                  <tr className="border-b border-gray-200">
+                    <td className="w-1/4 sm:w-1/5 px-6 py-4 text-gray-700 font-medium whitespace-nowrap">
+                      電子郵箱
+                    </td>
+                    <td className="px-6 py-4 text-gray-900 font-normal">
+                      <span 
+                        className={`font-mono text-xs sm:text-sm ${isViewEncryptedInfoEnabled && !isProfileRevealed ? 'cursor-pointer hover:text-sky-600 transition-colors' : ''}`}
+                        onClick={isViewEncryptedInfoEnabled && !isProfileRevealed ? handleToggleProfileVisibility : undefined}
+                        title={isViewEncryptedInfoEnabled && !isProfileRevealed ? '點擊右上角眼睛或點此解鎖完整郵箱' : undefined}
+                      >
+                        {isProfileRevealed
+                          ? user.fullEmail || 'testuser840926@gmail.com'
+                          : user.email}
+                      </span>
+                    </td>
+                  </tr>
+                )}
 
                 {/* Row 4: 生日 */}
                 <tr>
@@ -765,18 +838,6 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
                       <label className="block text-xs font-medium text-gray-700">
                         銀行卡帳號
                       </label>
-                      <button
-                        type="button"
-                        onClick={handleToggleWithdrawAccountVisibility}
-                        className="p-0.5 text-gray-400 hover:text-gray-700 rounded transition-colors cursor-pointer"
-                        title={isWithdrawAccountRevealed ? '點擊重新遮蔽銀行卡號' : (isWithdrawAccountUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整卡號')}
-                      >
-                        {isWithdrawAccountRevealed ? (
-                          <Eye className="w-3.5 h-3.5 text-emerald-600" />
-                        ) : (
-                          <EyeOff className="w-3.5 h-3.5 text-gray-400" />
-                        )}
-                      </button>
                     </div>
                     <div className="relative">
                       <input
@@ -785,22 +846,25 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
                         onChange={(e) => {
                           if (isWithdrawAccountRevealed) {
                             setBankAccountNumber(e.target.value);
-                          } else {
+                          } else if (isViewEncryptedInfoEnabled) {
                             handleToggleWithdrawAccountVisibility();
                           }
                         }}
+                        readOnly={!isWithdrawAccountRevealed}
                         placeholder="請輸入銀行卡號"
-                        className={`w-full pl-3 pr-10 py-2 border border-gray-300 rounded text-sm focus:border-sky-500 focus:outline-hidden font-mono ${!isWithdrawAccountRevealed ? 'bg-gray-50 cursor-pointer' : 'bg-white'}`}
-                        onClick={!isWithdrawAccountRevealed ? handleToggleWithdrawAccountVisibility : undefined}
+                        className={`w-full pl-3 pr-10 py-2 border border-gray-300 rounded text-sm focus:border-sky-500 focus:outline-hidden font-mono ${!isWithdrawAccountRevealed ? (isViewEncryptedInfoEnabled ? 'bg-gray-50 cursor-pointer' : 'bg-gray-100 cursor-not-allowed') : 'bg-white'}`}
+                        onClick={isViewEncryptedInfoEnabled && !isWithdrawAccountRevealed ? handleToggleWithdrawAccountVisibility : undefined}
                       />
-                      <button
-                        type="button"
-                        onClick={handleToggleWithdrawAccountVisibility}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 p-1 cursor-pointer"
-                        title={isWithdrawAccountRevealed ? '點擊遮蔽' : (isWithdrawAccountUnlockedInSession ? '點擊顯示' : '點擊解鎖')}
-                      >
-                        {isWithdrawAccountRevealed ? <Eye className="w-4 h-4 text-emerald-600" /> : <EyeOff className="w-4 h-4" />}
-                      </button>
+                      {isViewEncryptedInfoEnabled && (
+                        <button
+                          type="button"
+                          onClick={handleToggleWithdrawAccountVisibility}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 p-1 cursor-pointer"
+                          title={isWithdrawAccountRevealed ? '點擊遮蔽' : (isWithdrawAccountUnlockedInSession ? '點擊顯示' : '點擊解鎖')}
+                        >
+                          {isWithdrawAccountRevealed ? <Eye className="w-4 h-4 text-emerald-600" /> : <EyeOff className="w-4 h-4" />}
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -839,18 +903,6 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
                       <label className="block text-xs font-medium text-gray-700">
                         錢包地址 / 數位銀行帳號
                       </label>
-                      <button
-                        type="button"
-                        onClick={handleToggleWithdrawAccountVisibility}
-                        className="p-0.5 text-gray-400 hover:text-gray-700 rounded transition-colors cursor-pointer"
-                        title={isWithdrawAccountRevealed ? '點擊重新遮蔽帳號' : (isWithdrawAccountUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整帳號')}
-                      >
-                        {isWithdrawAccountRevealed ? (
-                          <Eye className="w-3.5 h-3.5 text-emerald-600" />
-                        ) : (
-                          <EyeOff className="w-3.5 h-3.5 text-gray-400" />
-                        )}
-                      </button>
                     </div>
                     <div className="relative">
                       <input
@@ -859,22 +911,25 @@ export const UserProfileSettings: React.FC<UserProfileSettingsProps> = ({
                         onChange={(e) => {
                           if (isWithdrawAccountRevealed) {
                             setCryptoAddress(e.target.value);
-                          } else {
+                          } else if (isViewEncryptedInfoEnabled) {
                             handleToggleWithdrawAccountVisibility();
                           }
                         }}
+                        readOnly={!isWithdrawAccountRevealed}
                         placeholder="請輸入數位銀行帳號或錢包地址"
-                        className={`w-full pl-3 pr-10 py-2 border border-gray-300 rounded text-sm focus:border-sky-500 focus:outline-hidden font-mono ${!isWithdrawAccountRevealed ? 'bg-gray-50 cursor-pointer' : 'bg-white'}`}
-                        onClick={!isWithdrawAccountRevealed ? handleToggleWithdrawAccountVisibility : undefined}
+                        className={`w-full pl-3 pr-10 py-2 border border-gray-300 rounded text-sm focus:border-sky-500 focus:outline-hidden font-mono ${!isWithdrawAccountRevealed ? (isViewEncryptedInfoEnabled ? 'bg-gray-50 cursor-pointer' : 'bg-gray-100 cursor-not-allowed') : 'bg-white'}`}
+                        onClick={isViewEncryptedInfoEnabled && !isWithdrawAccountRevealed ? handleToggleWithdrawAccountVisibility : undefined}
                       />
-                      <button
-                        type="button"
-                        onClick={handleToggleWithdrawAccountVisibility}
-                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 p-1 cursor-pointer"
-                        title={isWithdrawAccountRevealed ? '點擊遮蔽' : (isWithdrawAccountUnlockedInSession ? '點擊顯示' : '點擊解鎖')}
-                      >
-                        {isWithdrawAccountRevealed ? <Eye className="w-4 h-4 text-emerald-600" /> : <EyeOff className="w-4 h-4" />}
-                      </button>
+                      {isViewEncryptedInfoEnabled && (
+                        <button
+                          type="button"
+                          onClick={handleToggleWithdrawAccountVisibility}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 p-1 cursor-pointer"
+                          title={isWithdrawAccountRevealed ? '點擊遮蔽' : (isWithdrawAccountUnlockedInSession ? '點擊顯示' : '點擊解鎖')}
+                        >
+                          {isWithdrawAccountRevealed ? <Eye className="w-4 h-4 text-emerald-600" /> : <EyeOff className="w-4 h-4" />}
+                        </button>
+                      )}
                     </div>
                   </div>
 

@@ -8,6 +8,7 @@ interface WithdrawViewProps {
   onWithdrawSuccess: (amount: number, bank: string) => void;
   onUpdateUser?: (updated: Partial<UserProfile>) => void;
   onShowToast: (msg: string, type?: 'success' | 'info' | 'error') => void;
+  isViewEncryptedInfoEnabled?: boolean;
 }
 
 type WithdrawMethod = 'bank_card' | 'online_bank' | 'add_bank';
@@ -17,6 +18,7 @@ export const WithdrawView: React.FC<WithdrawViewProps> = ({
   onWithdrawSuccess,
   onUpdateUser,
   onShowToast,
+  isViewEncryptedInfoEnabled = true,
 }) => {
   const [activeTab, setActiveTab] = useState<WithdrawMethod>('bank_card');
   const [selectedBankOption, setSelectedBankOption] = useState<'ABBANK' | 'AMAR' | 'ACB'>('ABBANK');
@@ -28,6 +30,14 @@ export const WithdrawView: React.FC<WithdrawViewProps> = ({
   const [isWithdrawRevealed, setIsWithdrawRevealed] = useState(false);
   // Track if current visit to this page has been successfully verified/unlocked by password/PIN
   const [isWithdrawUnlockedInSession, setIsWithdrawUnlockedInSession] = useState(false);
+
+  // Reset revealed state if view encrypted info is disabled
+  useEffect(() => {
+    if (!isViewEncryptedInfoEnabled) {
+      setIsWithdrawRevealed(false);
+      setIsWithdrawUnlockedInSession(false);
+    }
+  }, [isViewEncryptedInfoEnabled]);
 
   // PIN Verification Modal state
   const [pinModalTarget, setPinModalTarget] = useState<SensitiveTargetType | null>(null);
@@ -42,6 +52,7 @@ export const WithdrawView: React.FC<WithdrawViewProps> = ({
 
   // Unified synchronized toggle for both 銀行卡 and 數位銀行
   const handleToggleWithdrawVisibility = () => {
+    if (!isViewEncryptedInfoEnabled) return;
     if (isWithdrawRevealed) {
       // 主動點 👁 重新遮蔽：同步遮蔽銀行卡與數位銀行，保留當前頁面授權，不用再次輸入密碼
       setIsWithdrawRevealed(false);
@@ -171,24 +182,22 @@ export const WithdrawView: React.FC<WithdrawViewProps> = ({
           </span>
         </button>
 
-        {/* 4. 統一眼睛開關 (以灰底為主) */}
-        <button
-          id="btn-toggle-withdraw-visibility"
-          type="button"
-          onClick={handleToggleWithdrawVisibility}
-          className={`px-3.5 sm:px-4 py-3.5 self-stretch rounded-lg transition-all duration-200 cursor-pointer flex items-center justify-center border active:scale-95 shrink-0 ${
-            isWithdrawRevealed
-              ? 'bg-gray-200 hover:bg-gray-300 border-emerald-500 text-emerald-600 shadow-sm ring-1 ring-emerald-500/30'
-              : 'bg-gray-200 hover:bg-gray-300 border-gray-300 text-gray-600 hover:text-gray-900 shadow-sm'
-          }`}
-          title={isWithdrawRevealed ? '點擊重新遮蔽取款帳號' : (isWithdrawUnlockedInSession ? '點擊解除遮蔽' : '點擊檢視完整卡號')}
-        >
-          {isWithdrawRevealed ? (
-            <Eye className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" />
-          ) : (
-            <EyeOff className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
-          )}
-        </button>
+        {/* 4. 統一眼睛開關 (直接位於添加銀行右邊，以灰底為主) */}
+        {isViewEncryptedInfoEnabled && (
+          <button
+            id="btn-toggle-withdraw-visibility"
+            type="button"
+            onClick={handleToggleWithdrawVisibility}
+            className="px-3.5 sm:px-4 py-3.5 self-stretch rounded-lg transition-all duration-200 cursor-pointer flex items-center justify-center border border-gray-300 bg-gray-200 hover:bg-gray-300 text-gray-700 hover:text-gray-900 shadow-sm active:scale-95 shrink-0"
+            title={isWithdrawRevealed ? '點擊重新遮蔽取款帳號' : (isWithdrawUnlockedInSession ? '點擊解除遮蔽' : '點擊檢視完整卡號')}
+          >
+            {isWithdrawRevealed ? (
+              <Eye className="w-5 h-5 sm:w-6 sm:h-6 text-gray-800" />
+            ) : (
+              <EyeOff className="w-5 h-5 sm:w-6 sm:h-6 text-gray-600" />
+            )}
+          </button>
+        )}
       </div>
 
       {/* Main Dark Navy Content Form Area matching screenshot */}
@@ -221,11 +230,11 @@ export const WithdrawView: React.FC<WithdrawViewProps> = ({
             </div>
             <div className="flex items-center justify-between py-1 border-t border-[#31375b]/60">
               <span className="text-gray-300 font-medium">銀行帳號</span>
-              <div className="flex items-center text-right">
+              <div className="flex items-center space-x-2 text-right">
                 <span 
-                  className={`text-white font-mono font-bold text-sm sm:text-base tracking-wider ${!isWithdrawRevealed ? 'cursor-pointer hover:text-sky-300 transition-colors' : ''}`}
-                  onClick={!isWithdrawRevealed ? handleToggleWithdrawVisibility : undefined}
-                  title={!isWithdrawRevealed ? (isWithdrawUnlockedInSession ? '點擊解除遮蔽' : '點擊檢視完整卡號') : undefined}
+                  className={`text-white font-mono font-bold text-sm sm:text-base tracking-wider ${isViewEncryptedInfoEnabled && !isWithdrawRevealed ? 'cursor-pointer hover:text-sky-300 transition-colors' : ''}`}
+                  onClick={isViewEncryptedInfoEnabled && !isWithdrawRevealed ? handleToggleWithdrawVisibility : undefined}
+                  title={isViewEncryptedInfoEnabled && !isWithdrawRevealed ? (isWithdrawUnlockedInSession ? '點擊解除遮蔽' : '點擊檢視完整卡號') : undefined}
                 >
                   {isWithdrawRevealed
                     ? user.fullBankAccount || '01398829142432'
@@ -381,10 +390,10 @@ export const WithdrawView: React.FC<WithdrawViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowPin(!showPin)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded bg-gray-200 hover:bg-gray-300 text-gray-600 cursor-pointer"
                   title={showPin ? '隱藏密碼' : '顯示密碼'}
                 >
-                  {showPin ? <Eye className="w-4 h-4 text-emerald-600" /> : <EyeOff className="w-4 h-4 text-gray-400" />}
+                  {showPin ? <Eye className="w-4 h-4 text-gray-800" /> : <EyeOff className="w-4 h-4 text-gray-500" />}
                 </button>
               </div>
             </div>
@@ -421,11 +430,11 @@ export const WithdrawView: React.FC<WithdrawViewProps> = ({
             </div>
             <div className="flex items-center justify-between py-1 border-t border-[#31375b]/60">
               <span className="text-gray-300 font-medium w-32">數字</span>
-              <div className="flex items-center text-right">
+              <div className="flex items-center space-x-2 text-right">
                 <span 
-                  className={`text-white font-mono font-bold text-sm sm:text-base tracking-wider ${!isWithdrawRevealed ? 'cursor-pointer hover:text-sky-300 transition-colors' : ''}`}
-                  onClick={!isWithdrawRevealed ? handleToggleWithdrawVisibility : undefined}
-                  title={!isWithdrawRevealed ? (isWithdrawUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整帳號') : undefined}
+                  className={`text-white font-mono font-bold text-sm sm:text-base tracking-wider ${isViewEncryptedInfoEnabled && !isWithdrawRevealed ? 'cursor-pointer hover:text-sky-300 transition-colors' : ''}`}
+                  onClick={isViewEncryptedInfoEnabled && !isWithdrawRevealed ? handleToggleWithdrawVisibility : undefined}
+                  title={isViewEncryptedInfoEnabled && !isWithdrawRevealed ? (isWithdrawUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整帳號') : undefined}
                 >
                   {isWithdrawRevealed
                     ? user.fullOnlineBankAccount || 'PIX-082914243249021'
@@ -553,10 +562,10 @@ export const WithdrawView: React.FC<WithdrawViewProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowPin(!showPin)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                  className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 rounded bg-gray-200 hover:bg-gray-300 text-gray-600 cursor-pointer"
                   title={showPin ? '隱藏密碼' : '顯示密碼'}
                 >
-                  {showPin ? <Eye className="w-4 h-4 text-emerald-600" /> : <EyeOff className="w-4 h-4 text-gray-400" />}
+                  {showPin ? <Eye className="w-4 h-4 text-gray-800" /> : <EyeOff className="w-4 h-4 text-gray-500" />}
                 </button>
               </div>
             </div>

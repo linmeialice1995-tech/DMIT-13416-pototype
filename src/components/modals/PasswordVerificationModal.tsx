@@ -51,11 +51,7 @@ export const PasswordVerificationModal: React.FC<PasswordVerificationModalProps>
   const resolvedTitlePrefix = titlePrefix !== undefined ? titlePrefix : '您已開啟';
   const resolvedTitleSuffix = titleSuffix !== undefined ? titleSuffix : '保護';
 
-  const resolvedSubtitle =
-    subtitle ||
-    (is2FAMode
-      ? '請打開綁定的認證應用程式獲取驗證碼'
-      : '請輸入綁定的取款密碼進行解鎖');
+  const resolvedSubtitle = subtitle || '請輸入綁定的取款密碼進行解鎖';
 
   const resolvedFieldLabel =
     fieldLabel || (is2FAMode ? '二階段驗證碼' : '取款密碼');
@@ -180,10 +176,10 @@ export const PasswordVerificationModal: React.FC<PasswordVerificationModalProps>
                 <button
                   type="button"
                   onClick={() => setShowCode(!showCode)}
-                  className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-0.5 cursor-pointer"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded bg-gray-100 hover:bg-gray-200 text-gray-600 cursor-pointer"
                   title={showCode ? '隱藏密碼' : '顯示密碼'}
                 >
-                  {showCode ? <Eye className="w-4 h-4 text-sky-600" /> : <EyeOff className="w-4 h-4 text-gray-400" />}
+                  {showCode ? <Eye className="w-4 h-4 text-gray-800" /> : <EyeOff className="w-4 h-4 text-gray-500" />}
                 </button>
               )}
             </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TopBar } from './components/TopBar';
 import { NavBar } from './components/NavBar';
 import { HeroBanner } from './components/HeroBanner';
@@ -20,61 +20,82 @@ import { ActivitiesView } from './components/views/ActivitiesView';
 import { FavoritesView } from './components/views/FavoritesView';
 import { DepositView } from './components/views/DepositView';
 import { WithdrawView } from './components/views/WithdrawView';
+import { MemberSettingsView, MemberFieldConfig, INITIAL_MEMBER_FIELDS } from './components/views/MemberSettingsView';
 import { GameLobbyView } from './components/views/GameLobbyView';
+import { SystemTabBar } from './components/SystemTabBar';
 import { DepositModal } from './components/modals/DepositModal';
 import { WithdrawModal } from './components/modals/WithdrawModal';
 import { CustomerServiceModal } from './components/modals/CustomerServiceModal';
 import { GamePlayModal } from './components/modals/GamePlayModal';
 import { PasswordVerificationModal } from './components/modals/PasswordVerificationModal';
-import { MainNavTab, SidebarMenuKey, UserProfile, GameItem, TransactionRecord } from './types';
+import { MainNavTab, SidebarMenuKey, UserProfile, GameItem, TransactionRecord, ActiveSystemTab } from './types';
 import { INITIAL_GAMES, INITIAL_TRANSACTIONS, INITIAL_BETS } from './mockData';
-import { CheckCircle2, AlertCircle, Info, X, Smartphone, Monitor } from 'lucide-react';
+import {
+  loadPersistedNavigationState,
+  savePersistedNavigationState,
+  loadPersistedUser,
+  savePersistedUser,
+  loadPersistedMemberFields,
+  savePersistedMemberFields,
+  PersistedNavigationState,
+} from './utils/navigationStorage';
+import { CheckCircle2, AlertCircle, Info, X, Smartphone, Monitor, Wifi } from 'lucide-react';
+
+const DEFAULT_USER: UserProfile = {
+  username: 'lin840926',
+  realName: 'AAA',
+  phone: '+62 1980***8902',
+  fullPhone: '+62 19801238902',
+  isPhoneRevealed: false,
+  email: 'te*****om',
+  fullEmail: 'testuser840926@gmail.com',
+  isEmailRevealed: false,
+  birthday: '2026/08/20',
+  balance: 1042.28,
+  vipLevel: 1,
+  currency: '฿',
+  bankName: 'ABBANK',
+  bankAccount: '*********42432',
+  fullBankAccount: '01398829142432',
+  isBankRevealed: false,
+  onlineBankName: 'PIX-CPF',
+  onlineBankAccount: '*****************24324',
+  fullOnlineBankAccount: 'PIX-082914243249021',
+  isOnlineBankRevealed: false,
+  withdrawPassword: '123456',
+  unreadMessages: 1,
+  unreadAnnouncements: 2,
+};
 
 export default function App() {
+  // Navigation & View State loaded from localStorage/URL so refresh keeps the exact same screen
+  const [navInit] = useState<PersistedNavigationState>(() => loadPersistedNavigationState());
+
+  // System Tabs: 'frontend_casino' (前台娛樂城) vs 'backend_admin' (後台管理系統 - 會員端設定)
+  const [activeSystemTab, setActiveSystemTab] = useState<ActiveSystemTab>(navInit.activeSystemTab);
+
   // Navigation & View State
-  const [activeNavTab, setActiveNavTab] = useState<MainNavTab>('home');
-  const [activeSidebarMenu, setActiveSidebarMenu] = useState<SidebarMenuKey>('security');
-  const [securityInitialSubView, setSecurityInitialSubView] = useState<SecuritySubView>('menu');
+  const [activeNavTab, setActiveNavTab] = useState<MainNavTab>(navInit.activeNavTab);
+  const [activeSidebarMenu, setActiveSidebarMenu] = useState<SidebarMenuKey>(navInit.activeSidebarMenu);
+  const [securityInitialSubView, setSecurityInitialSubView] = useState<SecuritySubView>(navInit.securityInitialSubView);
   
   // Mobile specific view state: 'home' = Mobile Casino Lobby, 'mine' = Mobile Member Center, 'withdraw' = Mobile Withdraw
-  const [mobileCurrentScreen, setMobileCurrentScreen] = useState<'home' | 'mine' | 'withdraw'>('home');
-  const [mobileSubMenu, setMobileSubMenu] = useState<SidebarMenuKey | null>(null);
+  const [mobileCurrentScreen, setMobileCurrentScreen] = useState<'home' | 'mine' | 'withdraw'>(navInit.mobileCurrentScreen);
+  const [mobileSubMenu, setMobileSubMenu] = useState<SidebarMenuKey | null>(navInit.mobileSubMenu);
   
-  // View mode switcher: 'auto' (responsive), 'mobile', or 'desktop'
-  const [forcedViewMode, setForcedViewMode] = useState<'auto' | 'mobile' | 'desktop'>('auto');
+  // View mode switcher: Default to 'mobile' (符合手機的版型), can toggle to 'desktop'
+  const [forcedViewMode, setForcedViewMode] = useState<'mobile' | 'desktop'>(navInit.forcedViewMode);
 
-  // User State matching the screenshot:
-  // Username: lin840926
-  // Balance: ฿ 1,042.28
-  // Real Name: AAA
-  // Phone: +82 1980***0902
-  // Email: te****om
-  // Birthday: 2026/08/20
-  const [user, setUser] = useState<UserProfile>({
-    username: 'lin840926',
-    realName: 'AAA',
-    phone: '+62 1980***8902',
-    fullPhone: '+62 19801238902',
-    isPhoneRevealed: false,
-    email: 'te*****om',
-    fullEmail: 'testuser840926@gmail.com',
-    isEmailRevealed: false,
-    birthday: '2026/08/20',
-    balance: 1042.28,
-    vipLevel: 1,
-    currency: '฿',
-    bankName: 'ABBANK',
-    bankAccount: '*********42432',
-    fullBankAccount: '01398829142432',
-    isBankRevealed: false,
-    onlineBankName: 'PIX-CPF',
-    onlineBankAccount: '*****************24324',
-    fullOnlineBankAccount: 'PIX-082914243249021',
-    isOnlineBankRevealed: false,
-    withdrawPassword: '123456',
-    unreadMessages: 1,
-    unreadAnnouncements: 2,
-  });
+  // Backend Admin Navigation State
+  const [adminLevel, setAdminLevel] = useState<'list' | 'detail'>(navInit.adminLevel);
+  const [adminItemId, setAdminItemId] = useState<string>(navInit.adminItemId);
+
+  // Sub tab navigation persistence
+  const [mobileWithdrawSubTab, setMobileWithdrawSubTab] = useState<'bank_card' | 'online_bank' | 'add_bank'>(navInit.mobileWithdrawSubTab);
+  const [mobileHomeGameTab, setMobileHomeGameTab] = useState<'cards' | 'slots' | 'fishing' | 'live' | 'sports' | 'lottery'>(navInit.mobileHomeGameTab);
+
+  // User State matching the screenshot (with persistence across reloads)
+  const [user, setUser] = useState<UserProfile>(() => loadPersistedUser(DEFAULT_USER));
 
   const [games, setGames] = useState<GameItem[]>(INITIAL_GAMES);
   const [transactions, setTransactions] = useState<TransactionRecord[]>(INITIAL_TRANSACTIONS);
@@ -90,6 +111,75 @@ export default function App() {
   // Authentication & 2FA Login Modal State
   const [isLoggedIn, setIsLoggedIn] = useState(true);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+  // Shared Member Field Settings linked between Backend Admin and Frontend User Center
+  const [memberFields, setMemberFields] = useState<MemberFieldConfig[]>(() => loadPersistedMemberFields(INITIAL_MEMBER_FIELDS));
+
+  // Member Encrypted Info View Switch (會員加密資訊「查看」功能開關 True/False)
+  const [isViewEncryptedInfoEnabled, setIsViewEncryptedInfoEnabled] = useState<boolean>(navInit.isViewEncryptedInfoEnabled);
+
+  // Automatically persist navigation state whenever any screen/tab changes
+  useEffect(() => {
+    savePersistedNavigationState({
+      activeSystemTab,
+      forcedViewMode,
+      mobileCurrentScreen,
+      mobileSubMenu,
+      activeNavTab,
+      activeSidebarMenu,
+      securityInitialSubView,
+      adminLevel,
+      adminItemId,
+      mobileWithdrawSubTab,
+      mobileHomeGameTab,
+      isViewEncryptedInfoEnabled,
+    });
+  }, [
+    activeSystemTab,
+    forcedViewMode,
+    mobileCurrentScreen,
+    mobileSubMenu,
+    activeNavTab,
+    activeSidebarMenu,
+    securityInitialSubView,
+    adminLevel,
+    adminItemId,
+    mobileWithdrawSubTab,
+    mobileHomeGameTab,
+    isViewEncryptedInfoEnabled,
+  ]);
+
+  // Persist user balance and details when updated
+  useEffect(() => {
+    savePersistedUser(user);
+  }, [user]);
+
+  // Persist backend admin field configuration changes
+  useEffect(() => {
+    savePersistedMemberFields(memberFields);
+  }, [memberFields]);
+
+  // Listen to browser Back/Forward buttons so navigation stays in sync
+  useEffect(() => {
+    const handlePopState = () => {
+      const state = loadPersistedNavigationState();
+      setActiveSystemTab(state.activeSystemTab);
+      setForcedViewMode(state.forcedViewMode);
+      setMobileCurrentScreen(state.mobileCurrentScreen);
+      setMobileSubMenu(state.mobileSubMenu);
+      setActiveNavTab(state.activeNavTab);
+      setActiveSidebarMenu(state.activeSidebarMenu);
+      setSecurityInitialSubView(state.securityInitialSubView);
+      setAdminLevel(state.adminLevel);
+      setAdminItemId(state.adminItemId);
+      setMobileWithdrawSubTab(state.mobileWithdrawSubTab);
+      setMobileHomeGameTab(state.mobileHomeGameTab);
+      setIsViewEncryptedInfoEnabled(state.isViewEncryptedInfoEnabled);
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   // Toast Notification System
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' } | null>(null);
@@ -196,6 +286,7 @@ export default function App() {
           onWithdrawSuccess={handleWithdrawSuccess}
           onUpdateUser={(updated) => setUser((prev) => ({ ...prev, ...updated }))}
           onShowToast={showToast}
+          isViewEncryptedInfoEnabled={isViewEncryptedInfoEnabled}
         />
       )}
 
@@ -204,10 +295,14 @@ export default function App() {
           user={user}
           isMobile={isMobileView}
           initialSubView={securityInitialSubView}
+          onSubViewChange={setSecurityInitialSubView}
           onUpdateUser={(updated) => setUser((prev) => ({ ...prev, ...updated }))}
           onShowToast={showToast}
+          memberFields={memberFields}
+          isViewEncryptedInfoEnabled={isViewEncryptedInfoEnabled}
           onBack={() => {
             setMobileSubMenu(null);
+            setSecurityInitialSubView('menu');
             showToast('已返回基本資料總覽', 'info');
           }}
         />
@@ -266,130 +361,190 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#eaeff5] flex flex-col font-sans text-gray-800 antialiased selection:bg-sky-500 selection:text-white">
-      {/* Floating Device Mode Switcher for ease of testing */}
-      <div className="fixed bottom-20 right-4 z-40 hidden sm:flex items-center space-x-1 bg-black/80 backdrop-blur-xs text-white px-2.5 py-1.5 rounded-full shadow-2xl border border-white/20 text-xs">
-        <button
-          onClick={() => setForcedViewMode(forcedViewMode === 'mobile' ? 'desktop' : 'mobile')}
-          className="flex items-center space-x-1 hover:text-amber-300 transition-colors font-medium cursor-pointer"
-          title="切換檢視模式"
-        >
-          {forcedViewMode === 'mobile' ? (
-            <>
-              <Monitor className="w-3.5 h-3.5 text-sky-400" />
-              <span>切換電腦版</span>
-            </>
-          ) : (
-            <>
-              <Smartphone className="w-3.5 h-3.5 text-amber-400" />
-              <span>切換手機版</span>
-            </>
-          )}
-        </button>
-      </div>
+      {/* 0. Top System Browser Tab Bar (完全分開的獨立系統分頁列) */}
+      <SystemTabBar
+        activeTab={activeSystemTab}
+        onSelectTab={setActiveSystemTab}
+        viewMode={forcedViewMode}
+        onToggleViewMode={setForcedViewMode}
+      />
 
-      {/* MOBILE VIEW (renders by default on small screens or when mobile mode forced) */}
-      <div className={forcedViewMode === 'mobile' ? 'block' : forcedViewMode === 'desktop' ? 'hidden' : 'block md:hidden'}>
-        {mobileCurrentScreen === 'home' ? (
-          <MobileHomeView
-            user={user}
-            games={games}
-            onSelectMenu={(menu) => {
-              handleMobileMenuSelect(menu);
-              if (menu === 'withdraw') {
-                setMobileCurrentScreen('withdraw');
-              } else {
-                setMobileCurrentScreen('mine');
-              }
-            }}
-            onOpenDeposit={() => {
-              setMobileSubMenu('deposit');
-              setActiveSidebarMenu('deposit');
-              setMobileCurrentScreen('mine');
-            }}
-            onOpenWithdraw={() => {
-              setMobileSubMenu('withdraw');
-              setActiveSidebarMenu('withdraw');
-              setMobileCurrentScreen('withdraw');
-            }}
-            onOpenCustomerService={() => setIsCustomerServiceOpen(true)}
-            onRefreshBalance={handleRefreshBalance}
-            isRefreshing={isRefreshingBalance}
-            onSelectNavTab={(tab) => {
-              setActiveNavTab(tab);
-            }}
-            currentNavTab={activeNavTab}
-            onLaunchGame={(g) => setActivePlayingGame(g)}
-            onSwitchToMemberCenter={() => {
-              setMobileSubMenu(null);
-              setMobileCurrentScreen('mine');
-            }}
-          />
-        ) : mobileCurrentScreen === 'withdraw' || mobileSubMenu === 'withdraw' ? (
-          <MobileWithdrawView
-            user={user}
-            onWithdrawSuccess={handleWithdrawSuccess}
-            onUpdateUser={(updated) => setUser((prev) => ({ ...prev, ...updated }))}
+      {/* When activeSystemTab is backend_admin, render ONLY the standalone admin management page */}
+      {activeSystemTab === 'backend_admin' ? (
+        <div className="flex-1 w-full bg-[#f4f6f9] flex flex-col">
+          <MemberSettingsView
             onShowToast={showToast}
-            onSwitchToHome={() => {
-              setMobileSubMenu(null);
-              setMobileCurrentScreen('home');
-            }}
-            onSwitchToDeposit={() => {
-              setMobileSubMenu('deposit');
-              setActiveSidebarMenu('deposit');
-              setMobileCurrentScreen('mine');
-            }}
-            onSwitchToMemberCenter={() => {
-              setMobileSubMenu(null);
-              setMobileCurrentScreen('mine');
-            }}
-            onOpenCustomerService={() => setIsCustomerServiceOpen(true)}
-            onLaunchGame={(g) => setActivePlayingGame(g)}
+            onBack={() => setActiveSystemTab('frontend_casino')}
+            memberFields={memberFields}
+            onUpdateMemberFields={setMemberFields}
+            isViewEncryptedInfoEnabled={isViewEncryptedInfoEnabled}
+            onToggleViewEncryptedInfo={setIsViewEncryptedInfoEnabled}
+            initialLevel={adminLevel}
+            onLevelChange={setAdminLevel}
+            initialItemId={adminItemId}
+            onSelectItemId={setAdminItemId}
           />
-        ) : (
-          <MobileMemberCenter
-            user={user}
-            activeMenu={mobileSubMenu}
-            onSelectMenu={(menu) => {
-              if (menu === 'withdraw') {
-                setMobileSubMenu('withdraw');
-                setMobileCurrentScreen('withdraw');
-              } else {
-                handleMobileMenuSelect(menu);
-              }
-            }}
-            onBackToGrid={() => setMobileSubMenu(null)}
-            onOpenDeposit={() => {
-              setMobileSubMenu('deposit');
-              setActiveSidebarMenu('deposit');
-            }}
-            onOpenWithdraw={() => {
-              setMobileSubMenu('withdraw');
-              setActiveSidebarMenu('withdraw');
-              setMobileCurrentScreen('withdraw');
-            }}
-            onOpenCustomerService={() => setIsCustomerServiceOpen(true)}
-            onRefreshBalance={handleRefreshBalance}
-            isRefreshing={isRefreshingBalance}
-            onSelectNavTab={(tab) => {
-              setActiveNavTab(tab);
-              if (tab !== 'home') {
-                setMobileSubMenu(null);
-              }
-            }}
-            currentNavTab={activeNavTab}
-            onSwitchToHome={() => {
-              setMobileSubMenu(null);
-              setMobileCurrentScreen('home');
-            }}
-          >
-            {renderActiveViewContent(true)}
-          </MobileMemberCenter>
-        )}
-      </div>
+        </div>
+      ) : (
+        /* When activeSystemTab is frontend_casino, render the frontend casino and member center (100% independent) */
+        <div className="flex-1 flex flex-col">
+          {/* Floating Device Mode Switcher for ease of testing */}
+          <div className="fixed bottom-20 right-4 z-40 hidden sm:flex items-center space-x-1 bg-black/80 backdrop-blur-xs text-white px-2.5 py-1.5 rounded-full shadow-2xl border border-white/20 text-xs">
+            <button
+              onClick={() => setForcedViewMode(forcedViewMode === 'mobile' ? 'desktop' : 'mobile')}
+              className="flex items-center space-x-1 hover:text-amber-300 transition-colors font-medium cursor-pointer"
+              title="切換檢視模式"
+            >
+              {forcedViewMode === 'mobile' ? (
+                <>
+                  <Monitor className="w-3.5 h-3.5 text-sky-400" />
+                  <span>切換電腦版</span>
+                </>
+              ) : (
+                <>
+                  <Smartphone className="w-3.5 h-3.5 text-amber-400" />
+                  <span>切換手機版</span>
+                </>
+              )}
+            </button>
+          </div>
 
-      {/* DESKTOP VIEW (renders on medium/large screens or when desktop mode forced) */}
-      <div className={forcedViewMode === 'mobile' ? 'hidden' : forcedViewMode === 'desktop' ? 'flex flex-col flex-1' : 'hidden md:flex flex-col flex-1'}>
+          {/* MOBILE VIEW (renders by default in authentic phone chassis, or full width on real mobile devices) */}
+          <div className={forcedViewMode === 'mobile' ? 'flex-1 flex flex-col items-center justify-start min-h-screen py-0 sm:py-6 bg-[#12141a]' : 'hidden'}>
+            {/* Standard Mobile Device Frame (Phone Mockup on desktop screens, clean 100% full width on mobile devices) */}
+            <div className="w-full sm:max-w-[430px] min-h-screen sm:min-h-[860px] bg-[#350101] sm:rounded-[44px] sm:shadow-[0_25px_60px_-15px_rgba(0,0,0,0.85)] sm:border-[8px] sm:border-[#282c35] flex flex-col relative overflow-hidden">
+              {/* Phone Top Status Bar (Mock smartphone status bar on desktop preview) */}
+              <div className="hidden sm:flex w-full bg-[#1b0000] text-gray-200 text-[11px] font-semibold px-6 pt-2 pb-1 items-center justify-between select-none z-50 shrink-0 border-b border-[#2d0000]">
+                <span>09:41</span>
+                {/* Dynamic Island */}
+                <div className="w-24 h-4 bg-black rounded-full flex items-center justify-center space-x-2">
+                  <div className="w-2 h-2 rounded-full bg-[#111]" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#0a1a2e]" />
+                </div>
+                <div className="flex items-center space-x-1.5">
+                  <span className="text-[10px] font-mono">5G</span>
+                  <Wifi className="w-3.5 h-3.5 text-white" />
+                  <div className="w-5 h-2.5 border border-white/70 rounded-xs p-0.5 flex items-center">
+                    <div className="h-full w-3 bg-white rounded-2xs" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Main Phone Screen Content */}
+              <div className="flex-1 flex flex-col relative overflow-y-auto no-scrollbar">
+                {mobileCurrentScreen === 'home' ? (
+                  <MobileHomeView
+                    user={user}
+                    games={games}
+                    initialGameTab={mobileHomeGameTab}
+                    onGameTabChange={setMobileHomeGameTab}
+                    onSelectMenu={(menu) => {
+                      handleMobileMenuSelect(menu);
+                      if (menu === 'withdraw') {
+                        setMobileCurrentScreen('withdraw');
+                      } else {
+                        setMobileCurrentScreen('mine');
+                      }
+                    }}
+                    onOpenDeposit={() => {
+                      setMobileSubMenu('deposit');
+                      setActiveSidebarMenu('deposit');
+                      setMobileCurrentScreen('mine');
+                    }}
+                    onOpenWithdraw={() => {
+                      setMobileSubMenu('withdraw');
+                      setActiveSidebarMenu('withdraw');
+                      setMobileCurrentScreen('withdraw');
+                    }}
+                    onOpenCustomerService={() => setIsCustomerServiceOpen(true)}
+                    onRefreshBalance={handleRefreshBalance}
+                    isRefreshing={isRefreshingBalance}
+                    onSelectNavTab={(tab) => {
+                      setActiveNavTab(tab);
+                    }}
+                    currentNavTab={activeNavTab}
+                    onLaunchGame={(g) => setActivePlayingGame(g)}
+                    onSwitchToMemberCenter={() => {
+                      setMobileSubMenu(null);
+                      setMobileCurrentScreen('mine');
+                    }}
+                  />
+                ) : mobileCurrentScreen === 'withdraw' || mobileSubMenu === 'withdraw' ? (
+                  <MobileWithdrawView
+                    user={user}
+                    onWithdrawSuccess={handleWithdrawSuccess}
+                    onUpdateUser={(updated) => setUser((prev) => ({ ...prev, ...updated }))}
+                    onShowToast={showToast}
+                    isViewEncryptedInfoEnabled={isViewEncryptedInfoEnabled}
+                    initialSubTab={mobileWithdrawSubTab}
+                    onSubTabChange={setMobileWithdrawSubTab}
+                    onSwitchToHome={() => {
+                      setMobileSubMenu(null);
+                      setMobileCurrentScreen('home');
+                    }}
+                    onSwitchToDeposit={() => {
+                      setMobileSubMenu('deposit');
+                      setActiveSidebarMenu('deposit');
+                      setMobileCurrentScreen('mine');
+                    }}
+                    onSwitchToMemberCenter={() => {
+                      setMobileSubMenu(null);
+                      setMobileCurrentScreen('mine');
+                    }}
+                    onOpenCustomerService={() => setIsCustomerServiceOpen(true)}
+                    onLaunchGame={(g) => setActivePlayingGame(g)}
+                  />
+                ) : (
+                  <MobileMemberCenter
+                    user={user}
+                    activeMenu={mobileSubMenu}
+                    onSelectMenu={(menu) => {
+                      if (menu === 'withdraw') {
+                        setMobileSubMenu('withdraw');
+                        setMobileCurrentScreen('withdraw');
+                      } else {
+                        handleMobileMenuSelect(menu);
+                      }
+                    }}
+                    onBackToGrid={() => setMobileSubMenu(null)}
+                    onOpenDeposit={() => {
+                      setMobileSubMenu('deposit');
+                      setActiveSidebarMenu('deposit');
+                    }}
+                    onOpenWithdraw={() => {
+                      setMobileSubMenu('withdraw');
+                      setActiveSidebarMenu('withdraw');
+                      setMobileCurrentScreen('withdraw');
+                    }}
+                    onOpenCustomerService={() => setIsCustomerServiceOpen(true)}
+                    onRefreshBalance={handleRefreshBalance}
+                    isRefreshing={isRefreshingBalance}
+                    onSelectNavTab={(tab) => {
+                      setActiveNavTab(tab);
+                      if (tab !== 'home') {
+                        setMobileSubMenu(null);
+                      }
+                    }}
+                    currentNavTab={activeNavTab}
+                    onSwitchToHome={() => {
+                      setMobileSubMenu(null);
+                      setMobileCurrentScreen('home');
+                    }}
+                  >
+                    {renderActiveViewContent(true)}
+                  </MobileMemberCenter>
+                )}
+              </div>
+
+              {/* Phone Bottom Home Swipe Bar Indicator (on desktop mockup) */}
+              <div className="hidden sm:flex w-full bg-[#e00000] pb-2 pt-0.5 justify-center z-50 shrink-0">
+                <div className="w-28 h-1 bg-white/70 rounded-full" />
+              </div>
+            </div>
+          </div>
+
+          {/* DESKTOP VIEW (renders when desktop mode selected) */}
+          <div className={forcedViewMode === 'desktop' ? 'flex flex-col flex-1' : 'hidden'}>
         {/* 1. Top Utility Header */}
         <TopBar
           user={user}
@@ -519,6 +674,8 @@ export default function App() {
           </div>
         </footer>
       </div>
+      </div>
+      )}
 
 
       {/* Modals */}
@@ -558,7 +715,7 @@ export default function App() {
         titlePrefix="您已開啟"
         highlightText="隱蔽資料"
         titleSuffix="保護"
-        subtitle="請打開綁定的認證應用程式獲取驗證碼"
+        subtitle="請輸入綁定的取款密碼進行解鎖"
         fieldLabel="二階段驗證碼"
         submitButtonText="登入"
         onSuccess={() => {

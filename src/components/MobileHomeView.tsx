@@ -42,6 +42,8 @@ interface MobileHomeViewProps {
   currentNavTab: MainNavTab;
   onLaunchGame: (game: GameItem) => void;
   onSwitchToMemberCenter: () => void;
+  initialGameTab?: 'cards' | 'slots' | 'fishing' | 'live' | 'sports' | 'lottery';
+  onGameTabChange?: (tab: 'cards' | 'slots' | 'fishing' | 'live' | 'sports' | 'lottery') => void;
 }
 
 export const MobileHomeView: React.FC<MobileHomeViewProps> = ({
@@ -57,9 +59,16 @@ export const MobileHomeView: React.FC<MobileHomeViewProps> = ({
   currentNavTab,
   onLaunchGame,
   onSwitchToMemberCenter,
+  initialGameTab = 'cards',
+  onGameTabChange,
 }) => {
-  const [selectedGameTab, setSelectedGameTab] = useState<'cards' | 'slots' | 'fishing' | 'live' | 'sports' | 'lottery'>('cards');
+  const [selectedGameTab, setSelectedGameTab] = useState<'cards' | 'slots' | 'fishing' | 'live' | 'sports' | 'lottery'>(initialGameTab);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  const handleSelectGameCategory = (tabKey: 'cards' | 'slots' | 'fishing' | 'live' | 'sports' | 'lottery') => {
+    setSelectedGameTab(tabKey);
+    onGameTabChange?.(tabKey);
+  };
 
   // Mascot Cartoon SVG Illustration Banner (Chiikawa & Friends)
   const MascotBanner = () => (
@@ -437,7 +446,7 @@ export const MobileHomeView: React.FC<MobileHomeViewProps> = ({
               <button
                 key={tab.key}
                 id={`btn-game-tab-${tab.key}`}
-                onClick={() => setSelectedGameTab(tab.key as any)}
+                onClick={() => handleSelectGameCategory(tab.key as any)}
                 className={`flex flex-col items-center justify-center py-2 px-1 rounded-xl transition-all cursor-pointer ${
                   isSelected
                     ? 'bg-red-600 text-white shadow-lg scale-105 border border-red-400'
@@ -529,7 +538,7 @@ export const MobileHomeView: React.FC<MobileHomeViewProps> = ({
       </div>
 
       {/* Floating Right Signal/WiFi indicator tool */}
-      <div className="fixed right-0 top-1/3 z-20">
+      <div className="absolute right-0 top-1/3 z-20">
         <button
           onClick={onOpenCustomerService}
           className="bg-[#242938]/90 hover:bg-[#242938] text-white p-2 rounded-l-lg shadow-lg border-l border-y border-gray-600 flex items-center justify-center cursor-pointer transition-transform hover:scale-105"
@@ -540,7 +549,7 @@ export const MobileHomeView: React.FC<MobileHomeViewProps> = ({
       </div>
 
       {/* 7. Bottom Navigation Bar (5 tabs in bright red: 首页[Active], 返水, 优惠, 客服, 我的) */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#e00000] border-t border-[#b80000] shadow-2xl flex items-center justify-around py-1.5 px-1 select-none">
+      <nav className="fixed sm:sticky bottom-0 left-1/2 -translate-x-1/2 sm:left-0 sm:translate-x-0 w-full max-w-[430px] sm:max-w-none z-40 bg-[#e00000] border-t border-[#b80000] shadow-2xl flex items-center justify-around py-1.5 px-1 select-none mt-auto">
         {/* 1. 首页 (Active) */}
         <button
           id="btn-bottom-nav-home"

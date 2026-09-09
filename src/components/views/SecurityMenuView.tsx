@@ -299,7 +299,7 @@ export const SecurityMenuView: React.FC<SecurityMenuViewProps> = ({
         </button>
 
         {/* Right side floating WiFi widget as in screenshot */}
-        <div className="fixed right-0 top-[115px] bg-[#33373d]/90 text-white pl-2 pr-1.5 py-1.5 rounded-l-full flex items-center shadow-lg border-y border-l border-white/20 pointer-events-none z-20">
+        <div className="absolute right-0 top-[115px] bg-[#33373d]/90 text-white pl-2 pr-1.5 py-1.5 rounded-l-full flex items-center shadow-lg border-y border-l border-white/20 pointer-events-none z-20">
           <Wifi className="w-3.5 h-3.5 text-[#30d2e8]" />
         </div>
       </div>

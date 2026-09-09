@@ -36,6 +36,9 @@ interface MobileWithdrawViewProps {
   onSwitchToMemberCenter: () => void;
   onOpenCustomerService: () => void;
   onLaunchGame?: (game: GameItem) => void;
+  isViewEncryptedInfoEnabled?: boolean;
+  initialSubTab?: 'bank_card' | 'online_bank' | 'add_bank';
+  onSubTabChange?: (tab: 'bank_card' | 'online_bank' | 'add_bank') => void;
 }
 
 export const MobileWithdrawView: React.FC<MobileWithdrawViewProps> = ({
@@ -48,10 +51,18 @@ export const MobileWithdrawView: React.FC<MobileWithdrawViewProps> = ({
   onSwitchToMemberCenter,
   onOpenCustomerService,
   onLaunchGame,
+  isViewEncryptedInfoEnabled = true,
+  initialSubTab = 'bank_card',
+  onSubTabChange,
 }) => {
   // Tabs & Radio states
   const [topTxTab, setTopTxTab] = useState<'deposit' | 'withdraw' | 'company'>('withdraw');
-  const [activeSubTab, setActiveSubTab] = useState<'bank_card' | 'online_bank' | 'add_bank'>('bank_card');
+  const [activeSubTab, setActiveSubTab] = useState<'bank_card' | 'online_bank' | 'add_bank'>(initialSubTab);
+
+  const changeSubTab = (tab: 'bank_card' | 'online_bank' | 'add_bank') => {
+    setActiveSubTab(tab);
+    onSubTabChange?.(tab);
+  };
   const [selectedBank, setSelectedBank] = useState<'ABBANK' | 'AMAR' | 'ACB'>('ABBANK');
   
   // Inputs
@@ -68,6 +79,14 @@ export const MobileWithdrawView: React.FC<MobileWithdrawViewProps> = ({
   const [isWithdrawUnlockedInSession, setIsWithdrawUnlockedInSession] = useState(false);
   const [pinModalTarget, setPinModalTarget] = useState<SensitiveTargetType | null>(null);
 
+  // Reset revealed state if view encrypted info is disabled
+  useEffect(() => {
+    if (!isViewEncryptedInfoEnabled) {
+      setIsWithdrawRevealed(false);
+      setIsWithdrawUnlockedInSession(false);
+    }
+  }, [isViewEncryptedInfoEnabled]);
+
   // Add bank form state (when in add_bank subtab)
   const [newBankName, setNewBankName] = useState('ABBANK');
   const [newAccountNum, setNewAccountNum] = useState('');
@@ -77,6 +96,7 @@ export const MobileWithdrawView: React.FC<MobileWithdrawViewProps> = ({
 
   // Unified synchronized toggle for both 银行卡 and 数位银行
   const handleToggleWithdrawVisibility = () => {
+    if (!isViewEncryptedInfoEnabled) return;
     if (isWithdrawRevealed) {
       // 主动点 👁 重新遮蔽：同步遮蔽，保留当前页面授权，不用再次输入密码
       setIsWithdrawRevealed(false);
@@ -287,7 +307,7 @@ export const MobileWithdrawView: React.FC<MobileWithdrawViewProps> = ({
           <div className="grid grid-cols-3 gap-1.5 flex-1">
             <button
               id="btn-subtab-bank-card"
-              onClick={() => setActiveSubTab('bank_card')}
+              onClick={() => changeSubTab('bank_card')}
               className={`py-2 px-1 rounded-md flex items-center justify-center space-x-1 text-xs font-bold cursor-pointer transition-all ${
                 activeSubTab === 'bank_card'
                   ? 'bg-[#c00000] text-white shadow-md border border-red-500'
@@ -300,7 +320,7 @@ export const MobileWithdrawView: React.FC<MobileWithdrawViewProps> = ({
 
             <button
               id="btn-subtab-online-bank"
-              onClick={() => setActiveSubTab('online_bank')}
+              onClick={() => changeSubTab('online_bank')}
               className={`py-2 px-1 rounded-md flex items-center justify-center space-x-1 text-xs font-bold cursor-pointer transition-all ${
                 activeSubTab === 'online_bank'
                   ? 'bg-[#c00000] text-white shadow-md border border-red-500'
@@ -313,7 +333,7 @@ export const MobileWithdrawView: React.FC<MobileWithdrawViewProps> = ({
 
             <button
               id="btn-subtab-add-bank"
-              onClick={() => setActiveSubTab('add_bank')}
+              onClick={() => changeSubTab('add_bank')}
               className={`py-2 px-1 rounded-md flex items-center justify-center space-x-1 text-xs font-bold cursor-pointer transition-all ${
                 activeSubTab === 'add_bank'
                   ? 'bg-[#c00000] text-white shadow-md border border-red-500'
@@ -325,24 +345,22 @@ export const MobileWithdrawView: React.FC<MobileWithdrawViewProps> = ({
             </button>
           </div>
 
-          {/* 统一眼睛开关 (灰底) */}
-          <button
-            id="btn-mobile-toggle-withdraw-visibility"
-            type="button"
-            onClick={handleToggleWithdrawVisibility}
-            className={`p-2 self-stretch rounded-md transition-all cursor-pointer border flex items-center justify-center shrink-0 active:scale-95 ${
-              isWithdrawRevealed
-                ? 'bg-zinc-700 border-emerald-500 text-emerald-400'
-                : 'bg-zinc-700 hover:bg-zinc-600 border-zinc-600 text-gray-300'
-            }`}
-            title={isWithdrawRevealed ? '點擊重新遮蔽取款帳號' : (isWithdrawUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整帳號')}
-          >
-            {isWithdrawRevealed ? (
-              <Eye className="w-4 h-4 text-emerald-400" />
-            ) : (
-              <EyeOff className="w-4 h-4 text-gray-300" />
-            )}
-          </button>
+          {/* 统一眼睛开关 (灰底為主，位於添加銀行右邊) */}
+          {isViewEncryptedInfoEnabled && (
+            <button
+              id="btn-mobile-toggle-withdraw-visibility"
+              type="button"
+              onClick={handleToggleWithdrawVisibility}
+              className="p-2 self-stretch rounded-md transition-all cursor-pointer border border-gray-300 bg-gray-200 hover:bg-gray-300 flex items-center justify-center shrink-0 active:scale-95 shadow-xs"
+              title={isWithdrawRevealed ? '點擊重新遮蔽取款帳號' : (isWithdrawUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整帳號')}
+            >
+              {isWithdrawRevealed ? (
+                <Eye className="w-4 h-4 text-gray-800" />
+              ) : (
+                <EyeOff className="w-4 h-4 text-gray-600" />
+              )}
+            </button>
+          )}
         </div>
 
         {/* Mode: Add Bank */}
@@ -386,7 +404,7 @@ export const MobileWithdrawView: React.FC<MobileWithdrawViewProps> = ({
                     return;
                   }
                   onShowToast(`已成功綁定新銀行：${newBankName} (${newAccountNum.slice(-4)})`, 'success');
-                  setActiveSubTab('bank_card');
+                  changeSubTab('bank_card');
                 }}
                 className="flex-1 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg text-xs font-bold transition-all shadow"
               >
@@ -394,7 +412,7 @@ export const MobileWithdrawView: React.FC<MobileWithdrawViewProps> = ({
               </button>
               <button
                 type="button"
-                onClick={() => setActiveSubTab('bank_card')}
+                onClick={() => changeSubTab('bank_card')}
                 className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-xs font-bold transition-all"
               >
                 取消
@@ -491,11 +509,11 @@ export const MobileWithdrawView: React.FC<MobileWithdrawViewProps> = ({
                 {/* 数字 */}
                 <div className="flex items-center justify-between">
                   <span className="text-gray-300 font-medium">数字</span>
-                  <div className="flex items-center">
+                  <div className="flex items-center space-x-1.5">
                     <span 
-                      className={`text-white font-mono font-bold tracking-wider ${!isWithdrawRevealed ? 'cursor-pointer hover:text-sky-300 transition-colors' : ''}`}
-                      onClick={!isWithdrawRevealed ? handleToggleWithdrawVisibility : undefined}
-                      title={!isWithdrawRevealed ? (isWithdrawUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整帳號') : undefined}
+                      className={`text-white font-mono font-bold tracking-wider ${isViewEncryptedInfoEnabled && !isWithdrawRevealed ? 'cursor-pointer hover:text-sky-300 transition-colors' : ''}`}
+                      onClick={isViewEncryptedInfoEnabled && !isWithdrawRevealed ? handleToggleWithdrawVisibility : undefined}
+                      title={isViewEncryptedInfoEnabled && !isWithdrawRevealed ? (isWithdrawUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整帳號') : undefined}
                     >
                       {isWithdrawRevealed ? '12345678924324' : '******************24324'}
                     </span>
@@ -532,11 +550,11 @@ export const MobileWithdrawView: React.FC<MobileWithdrawViewProps> = ({
                 {/* 银行帐号 */}
                 <div className="flex items-center justify-between">
                   <span className="text-gray-300 font-medium">银行帐号</span>
-                  <div className="flex items-center">
+                  <div className="flex items-center space-x-1.5">
                     <span 
-                      className={`text-white font-mono font-bold tracking-wider ${!isWithdrawRevealed ? 'cursor-pointer hover:text-sky-300 transition-colors' : ''}`}
-                      onClick={!isWithdrawRevealed ? handleToggleWithdrawVisibility : undefined}
-                      title={!isWithdrawRevealed ? (isWithdrawUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整卡號') : undefined}
+                      className={`text-white font-mono font-bold tracking-wider ${isViewEncryptedInfoEnabled && !isWithdrawRevealed ? 'cursor-pointer hover:text-sky-300 transition-colors' : ''}`}
+                      onClick={isViewEncryptedInfoEnabled && !isWithdrawRevealed ? handleToggleWithdrawVisibility : undefined}
+                      title={isViewEncryptedInfoEnabled && !isWithdrawRevealed ? (isWithdrawUnlockedInSession ? '點擊解除遮蔽' : '點擊解鎖檢視完整卡號') : undefined}
                     >
                       {isWithdrawRevealed ? '01398829142432' : '*********42432'}
                     </span>
@@ -618,10 +636,10 @@ export const MobileWithdrawView: React.FC<MobileWithdrawViewProps> = ({
                   <button
                     type="button"
                     onClick={() => setShowPin(!showPin)}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-800"
+                    className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded bg-gray-300 hover:bg-gray-400 text-gray-700 cursor-pointer"
                     title={showPin ? '隱藏密碼' : '顯示密碼'}
                   >
-                    {showPin ? <Eye className="w-4 h-4 text-emerald-400" /> : <EyeOff className="w-4 h-4 text-gray-400" />}
+                    {showPin ? <Eye className="w-3.5 h-3.5 text-gray-800" /> : <EyeOff className="w-3.5 h-3.5 text-gray-600" />}
                   </button>
                 </div>
               </div>
@@ -722,7 +740,7 @@ export const MobileWithdrawView: React.FC<MobileWithdrawViewProps> = ({
       </div>
 
       {/* Floating Right Signal/WiFi indicator tool */}
-      <div className="fixed right-0 top-1/3 z-20">
+      <div className="absolute right-0 top-1/3 z-20">
         <button
           onClick={onOpenCustomerService}
           className="bg-[#242938]/90 hover:bg-[#242938] text-white p-2 rounded-l-lg shadow-lg border-l border-y border-gray-600 flex items-center justify-center cursor-pointer transition-transform hover:scale-105"
@@ -733,7 +751,7 @@ export const MobileWithdrawView: React.FC<MobileWithdrawViewProps> = ({
       </div>
 
       {/* 6. Bottom Navigation Bar (5 tabs in bright red) */}
-      <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#e00000] border-t border-[#b80000] shadow-2xl flex items-center justify-around py-1.5 px-1 select-none">
+      <nav className="fixed sm:sticky bottom-0 left-1/2 -translate-x-1/2 sm:left-0 sm:translate-x-0 w-full max-w-[430px] sm:max-w-none z-40 bg-[#e00000] border-t border-[#b80000] shadow-2xl flex items-center justify-around py-1.5 px-1 select-none mt-auto">
         <button
           id="btn-bottom-nav-home"
           onClick={onSwitchToHome}

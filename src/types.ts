@@ -26,6 +26,8 @@ export type SidebarMenuKey =
   | 'rebate'
   | 'favorites';
 
+export type ActiveSystemTab = 'frontend_casino' | 'backend_admin';
+
 export interface UserProfile {
   username: string;
   realName: string;
